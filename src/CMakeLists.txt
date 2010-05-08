@@ -1,3 +1,5 @@
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 ADD_LIBRARY(exception STATIC Exception)
 
 ADD_EXECUTABLE(test main.cpp)
