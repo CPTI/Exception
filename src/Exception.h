@@ -31,7 +31,7 @@
  * 
  */
 
-namespace exception {
+namespace ExceptionLib {
 
   class StackTrace;
 
@@ -134,7 +134,7 @@ namespace exception {
   void init(char *argv0);
 }
 
-inline std::ostream& operator<< (std::ostream& o, const exception::Exception& e)
+inline std::ostream& operator<< (std::ostream& o, const ExceptionLib::Exception& e)
 {
    return o << e.what();
 }

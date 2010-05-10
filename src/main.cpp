@@ -1,6 +1,6 @@
 #include "Exception.h"
 
-using namespace exception;
+using namespace ExceptionLib;
 using namespace std;
 
 void faulty_1(int depth) {

@@ -113,7 +113,7 @@ public:
 
 #endif
 
-namespace exception {
+namespace ExceptionLib {
 
 static bool stackEnabled = true;
 static bool executable_found;
