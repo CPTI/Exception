@@ -1,0 +1,6 @@
+Para compilar o modulo de excecoes, siga os passos a seguir
+
+cd exception
+cmake ./
+make
+

@@ -35,6 +35,11 @@ namespace ExceptionLib {
 
   class StackTrace;
 
+  /**
+   * Classe base de exceções. Tem métodos para obter a mensagem de erro,
+   * se houver, e a pilha de execução que resultou na exceção.
+   */
+
   class Exception : public std::exception {
   private:
       std::string error;
