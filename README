@@ -4,3 +4,6 @@ cd exception
 cmake ./
 make
 
+Esta pasta contem um repositorio do sistema de controle de versao Mercurial.
+com o comando "hg log", pode-se ver as mensagens e os patches de todas as
+revisoes.
