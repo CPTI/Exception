@@ -1,4 +1,5 @@
 #include "Exception.h"
+#include "platform.h"
 
 #include <cstddef>
 #include <exception>
@@ -14,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#ifdef linux
+#ifdef __UNIX__
 
 #include <errno.h>
 #include <execinfo.h>
@@ -25,9 +26,13 @@
 
 #endif
 
+#ifdef __WINDOWS__
+#include "windows/StackWalker.h"
+#endif
+
 using namespace std;
 
-#ifdef linux
+#ifdef __UNIX__
 char * opt_getcwd (char * stack_buf, int stack_size)
 {
     if (getcwd (stack_buf, stack_size) == stack_buf)
@@ -120,9 +125,40 @@ static bool executable_found;
 static string executable;
 
 
+#if defined(__WINDOWS__)
+class StackTrace: public StackWalker
+{
+public:
+	StackTrace() : StackWalker(), m_foundMe(false) {
+		this->ShowCallstack();
 
+	}
+
+	std::string getTrace() {
+		
+		return m_trace;
+	}
+
+protected:
+	virtual void OnOutput(LPCSTR szText)
+	{
+		std::string text(szText);
+
+		// Elimina um monte de lixo que ninguem quer ver
+		if (!m_foundMe) {
+			if (text.find("StackTrace") != std::string::npos) {
+				m_foundMe = true;
+			}
+		} else {
+			m_trace += szText;
+		}
+	}
+private:
+	bool m_foundMe;
+	std::string m_trace;
+};
+#elif defined(__UNIX__)
 class StackTrace {
-#ifdef linux
 private:
     void * bt[50];
     ssize_t size;
@@ -186,10 +222,17 @@ public:
         }
         return stack.str();
     }
-#endif
 };
+#else
+class StackTrace {
+public:
+    std::string getTrace() {
+		return "StackTrace not supported";
+	}
+};
+#endif
 
-#ifdef linux
+#ifdef __UNIX__
 void segfaulthandler(int signum)
 {
     signal(SIGSEGV, SIG_DFL);
@@ -225,7 +268,7 @@ void segfaulthandler(int signum)
 void terminate_handler()
 {
     cerr << "Caught unhandled exception" << endl;
-#ifdef linux
+#ifdef __UNIX__
     if (stackEnabled) {
         cerr << StackTrace().getTrace() << endl;
     }
@@ -234,7 +277,7 @@ void terminate_handler()
 
 void init(char *argv0)
 {
-#ifdef linux
+#ifdef __UNIX__
     Finder finder;
     string rel_path(argv0);
     executable_found = finder.whereis(rel_path, executable);
@@ -273,7 +316,6 @@ Exception::~Exception() throw ()
 
 string Exception::stacktrace() const
 {
-#ifdef linux
     if (st) {
         return st->getTrace();
     } else if (!stacktraceEnabled) {
@@ -281,8 +323,6 @@ string Exception::stacktrace() const
     } else {
         return "stacktrace not available";
     }
-#endif
-  return "stacktrace not implemented";
 }
 
 void stacktraceEnabled(bool enable) {
