@@ -31,9 +31,13 @@
  * 
  */
 
+
+namespace Backtrace {
+	class StackTrace;
+}
+
 namespace ExceptionLib {
 
-  class StackTrace;
 
   /**
    * Classe base de exceções. Tem métodos para obter a mensagem de erro,
@@ -43,7 +47,7 @@ namespace ExceptionLib {
   class Exception : public std::exception {
   private:
       std::string error;
-      mutable StackTrace * st;
+	  mutable ::Backtrace::StackTrace * st;
       Exception& operator=(const Exception&);
   public:
       Exception(std::string errorMsg = "Exception", bool trace = true);
