@@ -69,7 +69,7 @@ namespace ExceptionLib {
 	{
 		if (st) {
 			return st->getTrace();
-		} else if (!stacktraceEnabled) {
+		} else if (!stackEnabled) {
 			return "stacktrace deactivated";
 		} else {
 			return "stacktrace not available";

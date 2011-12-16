@@ -1,4 +1,5 @@
-#include "../Bactrace.h"
+#include "../BackTrace.h"
+#include "StackWalker.h"
 
 namespace {
 	class BackTraceWindows: public StackWalker, public ::Backtrace::StackTrace
@@ -19,7 +20,7 @@ protected:
 
 		// Elimina um monte de lixo que ninguem quer ver
 		if (!m_foundMe) {
-			if (text.find("StackTrace") != std::string::npos) {
+			if (text.find("BackTraceWindows") != std::string::npos) {
 				m_foundMe = true;
 			}
 		} else {
