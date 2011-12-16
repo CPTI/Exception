@@ -5,7 +5,7 @@ using namespace std;
 
 void faulty_1(int depth) {
 	if (depth <= 0)
-		throw Exception("lalala");
+		throw IOException("lalala");
 	return faulty_1(depth-1);
 }
 
@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 	try { 
 		faulty_1(10);
 	} catch (const Exception& ex) {
+		cout << ex.what() << endl;
 		cout << ex.stacktrace() << endl;
 	}
 	return 0;

@@ -41,31 +41,51 @@ namespace ExceptionLib {
 		set_terminate(terminate_handler);
 	}
 
-
-	Exception::Exception(std::string errorMsg, bool trace) :
-		error(errorMsg),
-		st(0)
+	ExceptionBase::ExceptionBase(const ExceptionBase& that)
+		: m_raiser(that.m_raiser)
+		, m_cloner(that.m_cloner)
+		, st(that.st)
+		, m_what(that.m_what)
+		, m_nested(that.m_nested->clone())
 	{
-		if (stackEnabled && trace) {
-			st = ::Backtrace::trace();
+		if (st) {
+			st->increaseCount();
 		}
 	}
 
-	Exception::Exception(const Exception& that) :
-		error(that.error),
-		st(that.st)
-	{
-		that.st = 0;
-	}
-
-	Exception::~Exception() throw ()
+	ExceptionBase::~ExceptionBase() throw ()
 	{
 		try {
-			if (st) delete st;
+			if (m_nested) {
+				delete m_nested;
+			}
+			if (st) st->decreaseCount();
+			st = NULL;
 		} catch (...) {}
 	}
 
-	string Exception::stacktrace() const
+
+	void ExceptionBase::raise() const
+	{
+		m_raiser(this);
+	}
+
+	Exception* ExceptionBase::clone() const
+	{
+		return m_cloner(this);
+	}
+
+	const char* ExceptionBase::what() const throw()
+	{
+		return m_what.c_str();
+	}
+
+	const Exception* ExceptionBase::nested() const
+	{
+		return m_nested;
+	}
+
+	std::string ExceptionBase::stacktrace() const
 	{
 		if (st) {
 			return st->getTrace();
@@ -75,6 +95,27 @@ namespace ExceptionLib {
 			return "stacktrace not available";
 		}
 	}
+
+	void ExceptionBase::setup(bool enableTrace)
+	{
+		if (m_nested) {
+			m_nested = m_nested->clone();
+		}
+		if (stackEnabled && enableTrace) {
+			st = ::Backtrace::trace();
+		}
+	}
+
+
+	Exception::Exception(std::string errorMsg, bool trace) :
+		ExceptionBase(this, trace, errorMsg)
+	{}
+
+	Exception::Exception(const Exception& that) :
+		ExceptionBase(that)
+	{	}
+
+
 
 	void stacktraceEnabled(bool enable) {
 		stackEnabled = enable;

@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <iostream>
+#include <memory>
 
 /* This file defines a hierachy of Exception classes that is meant to
  * unify the definition and treatment of exceptions. All exceptions
@@ -38,16 +39,113 @@ namespace Backtrace {
 
 namespace ExceptionLib {
 
+	/**
+	 * Classes para forçar a implementação de alguns métodos na classe mais concreta.
+	 *
+	 *
+	 */
+
+	class Exception;
+	class ExceptionBase;
+
+
+	template<class Ex>
+	class ExceptionFactory {
+	public:
+		typedef Ex ExceptionType;
+
+		static void raise(const ExceptionBase* ex) {
+			const ExceptionType* myException = dynamic_cast<const ExceptionType*>(ex);
+			if (myException) {
+				throw *myException;
+			}
+			throw std::logic_error("erro no uso de excecoes");
+		}
+
+
+		static Exception* clone(const ExceptionBase* ex) {
+			const ExceptionType* myException = dynamic_cast<const ExceptionType*>(ex);
+			if (myException) {
+				// chama o construtor de copia
+				return new ExceptionType(*myException);
+			}
+			return NULL;
+		}
+	};
+
+	typedef std::exception BaseExceptionType;
+
+	class ExceptionBase: public BaseExceptionType {
+	public:
+
+		typedef void (*raiser)(const ExceptionBase*);
+		typedef Exception* (*cloner)(const ExceptionBase*);
+
+		// Esse construtor é template para evitar o trabalho do programador
+		template <class Ex>
+		ExceptionBase(
+				Ex*,
+				bool enableTrace,
+				const std::string& what = "",
+				// se nested for diferente de null, uma copia é feita com o clone
+				Exception* nested = NULL
+					  )
+			: m_raiser(ExceptionFactory<Ex>::raise)
+			, m_cloner(ExceptionFactory<Ex>::clone)
+			, st(NULL)
+			, m_what(what)
+			, m_nested(nested)
+		{
+			setup(enableTrace);
+		}
+
+		~ExceptionBase() throw();
+
+		ExceptionBase(const ExceptionBase&);
+
+		virtual void raise() const;
+
+		virtual Exception *clone() const;
+
+		virtual const char* what() const throw();
+
+		const Exception* nested() const;
+
+
+		/* Returns the stacktrace of the context where the exception was thrown.
+		 * The information available is totally platform and compiler dependant,
+		 * and might not be implemented for your platform. In this case, the method
+		 * returns "stacktrace not implemented". Stacktraces can also be disabled (see below)
+		 * and in that case the return value is "stacktrace deactivated". As the
+		 * construction of stacktraces may be expensive and unecessary for some classes
+		 * the construction of the stacktrace can be disabled using the second argument
+		 * to the constructor. In this case, the method returns "stacktrace not available"
+		 */
+		std::string stacktrace() const;
+
+	private:
+		ExceptionBase();
+		ExceptionBase& operator=(const ExceptionBase&);
+
+		raiser m_raiser;
+		cloner m_cloner;
+
+		mutable ::Backtrace::StackTrace * st;
+
+		std::string m_what;
+		Exception* m_nested;
+
+		void setup(bool enableTrace);
+	};
+
 
   /**
    * Classe base de exceções. Tem métodos para obter a mensagem de erro,
    * se houver, e a pilha de execução que resultou na exceção.
    */
 
-  class Exception : public std::exception {
+  class Exception : public virtual ExceptionBase {
   private:
-      std::string error;
-	  mutable ::Backtrace::StackTrace * st;
       Exception& operator=(const Exception&);
   public:
       Exception(std::string errorMsg = "Exception", bool trace = true);
@@ -55,20 +153,7 @@ namespace ExceptionLib {
        * the copy constructor is defined and does the right thing
        */
       Exception(const Exception&);
-      virtual ~Exception() throw ();
-      virtual const char * what() const throw () { return error.c_str(); }
-      
-      /* Returns the stacktrace of the context where the exception was thrown.
-       * The information available is totally platform and compiler dependant,
-       * and might not be implemented for your platform. In this case, the method
-       * returns "stacktrace not implemented". Stacktraces can also be disabled (see below)
-       * and in that case the return value is "stacktrace deactivated". As the 
-       * construction of stacktraces may be expensive and unecessary for some classes
-       * the construction of the stacktrace can be disabled using the second argument
-       * to the constructor. In this case, the method returns "stacktrace not available"
-       */
-      virtual std::string stacktrace() const;
-
+	  virtual ~Exception() throw () {}
   };
 
 
@@ -77,8 +162,8 @@ namespace ExceptionLib {
   public:
       /* Typically IOExceptions are expected, so the default is not to create a stacktrace 
        */
-      IOException(std::string errorMsg = "IOException", bool trace = false ): Exception(errorMsg, trace) {}
-      IOException(const IOException& that) : Exception(that) {}
+	  IOException(std::string errorMsg = "IOException", bool trace = true ): ExceptionBase(this, trace, errorMsg) {}
+	  IOException(const IOException& that) : ExceptionBase(that) {}
       virtual ~IOException() throw () {}
   };
 
@@ -88,8 +173,8 @@ namespace ExceptionLib {
   class ProgrammingError : public Exception {
   public:
       /* Always enable stacktrace for this */
-      ProgrammingError(std::string errorMsg = "Programming Error"): Exception(errorMsg, true) {}
-      ProgrammingError(const ProgrammingError& that) : Exception(that) {}
+	  ProgrammingError(std::string errorMsg = "Programming Error"): ExceptionBase(this, true, errorMsg) {}
+	  ProgrammingError(const ProgrammingError& that) : ExceptionBase(that) {}
       virtual ~ProgrammingError() throw () {}
   };
 
@@ -97,29 +182,29 @@ namespace ExceptionLib {
   class IllegalArgumentException : public ProgrammingError {
   public:
       IllegalArgumentException(std::string errorMsg = "IllegalArgumentException") : 
-        ProgrammingError(errorMsg) {}
-      IllegalArgumentException(const IllegalArgumentException& that) : ProgrammingError(that) {}
+		ExceptionBase(this, true, errorMsg) {}
+	  IllegalArgumentException(const IllegalArgumentException& that) : ExceptionBase(that) {}
       virtual ~IllegalArgumentException() throw () {}
   };
 
   class SegmentationFault : public ProgrammingError {
   public:
-      SegmentationFault(std::string errorMsg = "SegmentationFault"): ProgrammingError(errorMsg) {}
-      SegmentationFault(const SegmentationFault& that) : ProgrammingError(that) {}
+	  SegmentationFault(std::string errorMsg = "SegmentationFault"): ExceptionBase(this, true, errorMsg) {}
+	  SegmentationFault(const SegmentationFault& that) : ExceptionBase(that) {}
       virtual ~SegmentationFault() throw () {}
   };
 
   class IllegalInstruction : public ProgrammingError {
   public:
-      IllegalInstruction(std::string errorMsg = "IllegalInstruction"): ProgrammingError(errorMsg) {}
-      IllegalInstruction(const IllegalInstruction& that) : ProgrammingError(that) {}
+	  IllegalInstruction(std::string errorMsg = "IllegalInstruction"): ExceptionBase(this, true, errorMsg) {}
+	  IllegalInstruction(const IllegalInstruction& that) : ExceptionBase(that) {}
       virtual ~IllegalInstruction() throw () {}
   };
 
   class FloatingPointException : public ProgrammingError {
   public:
-      FloatingPointException(std::string errorMsg = "FloatingPointException"): ProgrammingError(errorMsg) {}
-      FloatingPointException(const FloatingPointException& that) : ProgrammingError(that) {}
+	  FloatingPointException(std::string errorMsg = "FloatingPointException"): ExceptionBase(this, true, errorMsg) {}
+	  FloatingPointException(const FloatingPointException& that) : ExceptionBase(that) {}
       virtual ~FloatingPointException() throw () {}
   };
 
