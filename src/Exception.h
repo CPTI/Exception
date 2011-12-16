@@ -10,8 +10,6 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <iostream>
-#include <memory>
 
 /* This file defines a hierachy of Exception classes that is meant to
  * unify the definition and treatment of exceptions. All exceptions

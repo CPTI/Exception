@@ -44,11 +44,15 @@ namespace ExceptionLib {
 	ExceptionBase::ExceptionBase(const ExceptionBase& that)
 		: m_raiser(that.m_raiser)
 		, m_cloner(that.m_cloner)
-		, st(that.st)
+		, st(NULL)
 		, m_what(that.m_what)
-		, m_nested(that.m_nested->clone())
+		, m_nested(NULL)
 	{
-		if (st) {
+		if (that.m_nested) {
+			m_nested = that.m_nested->clone();
+		}
+		if (that.st) {
+			st = that.st;
 			st->increaseCount();
 		}
 	}
@@ -109,7 +113,7 @@ namespace ExceptionLib {
 
 	Exception::Exception(std::string errorMsg, bool trace) :
 		ExceptionBase(this, trace, errorMsg)
-	{}
+	{  }
 
 	Exception::Exception(const Exception& that) :
 		ExceptionBase(that)
