@@ -1,6 +1,10 @@
 #include "Exception.h"
 #include <iostream>
 
+#ifdef QT_CORE_LIB
+	#include <QCoreApplication>
+#endif
+
 using namespace ExceptionLib;
 using namespace std;
 
@@ -21,10 +25,15 @@ void faulty_2(int depth) {
 
 int main(int argc, char *argv[])
 {
+#ifdef QT_CORE_LIB
+
+	QCoreApplication app(argc, argv);
+#else
 	init(argv[0]);
+#endif
+
 	//stacktraceEnabled(false);
-	try { 
-		cout << "Fazendo o try" << endl;
+	try {
 		faulty_1(10);
 	} catch (const Exception& ex) {
 		cout << ex.what() << endl;

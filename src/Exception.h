@@ -12,6 +12,16 @@
 #include <string>
 #include <ostream>
 
+#ifdef QT_CORE_LIB
+#include <QtCore>
+#include <QString>
+#include <QCoreApplication>
+#include <QList>
+	typedef QtConcurrent::Exception BaseExceptionType;
+#else
+	typedef std::exception BaseExceptionType;
+#endif
+
 /* This file defines a hierachy of Exception classes that is meant to
  * unify the definition and treatment of exceptions. All exceptions
  * inherit from std::exception, thus making it easier to integrate with
@@ -62,7 +72,7 @@ namespace ExceptionLib {
 		}
 
 
-		static Exception* clone(const ExceptionBase* ex) {
+		static ExceptionBase* clone(const ExceptionBase* ex) {
 			const ExceptionType* myException = dynamic_cast<const ExceptionType*>(ex);
 			if (myException) {
 				// chama o construtor de copia
@@ -72,13 +82,13 @@ namespace ExceptionLib {
 		}
 	};
 
-	typedef std::exception BaseExceptionType;
+
 
 	class ExceptionBase: public BaseExceptionType {
 	public:
 
 		typedef void (*raiser)(const ExceptionBase*);
-		typedef Exception* (*cloner)(const ExceptionBase*);
+		typedef ExceptionBase* (*cloner)(const ExceptionBase*);
 
 		// Esse construtor é template para evitar o trabalho do programador
 		template <class Ex>
@@ -87,7 +97,7 @@ namespace ExceptionLib {
 				bool enableTrace,
 				const std::string& what = "",
 				// se nested for diferente de null, uma copia é feita com o clone
-				Exception* nested = NULL
+				ExceptionBase* nested = NULL
 					  )
 			: m_raiser(ExceptionFactory<Ex>::raise)
 			, m_cloner(ExceptionFactory<Ex>::clone)
@@ -104,11 +114,11 @@ namespace ExceptionLib {
 
 		virtual void raise() const;
 
-		virtual Exception *clone() const;
+		virtual ExceptionBase* clone() const;
 
 		virtual const char* what() const throw();
 
-		const Exception* nested() const;
+		const ExceptionBase* nested() const;
 
 
 		/* Returns the stacktrace of the context where the exception was thrown.
@@ -132,7 +142,7 @@ namespace ExceptionLib {
 		mutable ::Backtrace::StackTrace * st;
 
 		std::string m_what;
-		Exception* m_nested;
+		ExceptionBase* m_nested;
 
 		void setup(bool enableTrace);
 	};
@@ -222,7 +232,7 @@ namespace ExceptionLib {
 
   /* Enable global error handling. This function will overwite any handlers for
    * SIGSEGV, SIGFPE, SIGILL and SIGBUS. The C++ terminate handler will also
-   * be overwritten.
+   * be overwritten. You don't need to call this method if Qt support is enabled
    */
   void init(char *argv0);
 }

@@ -19,6 +19,10 @@
 
 using namespace std;
 
+
+static bool initialized = false;
+
+
 namespace ExceptionLib {
 
 	static bool stackEnabled = true;
@@ -39,6 +43,7 @@ namespace ExceptionLib {
 	{
 		::Backtrace::initialize(argv0);
 		set_terminate(terminate_handler);
+		initialized = true;
 	}
 
 	ExceptionBase::ExceptionBase(const ExceptionBase& that)
@@ -74,7 +79,7 @@ namespace ExceptionLib {
 		m_raiser(this);
 	}
 
-	Exception* ExceptionBase::clone() const
+	ExceptionBase* ExceptionBase::clone() const
 	{
 		return m_cloner(this);
 	}
@@ -84,7 +89,7 @@ namespace ExceptionLib {
 		return m_what.c_str();
 	}
 
-	const Exception* ExceptionBase::nested() const
+	const ExceptionBase* ExceptionBase::nested() const
 	{
 		return m_nested;
 	}
@@ -102,6 +107,14 @@ namespace ExceptionLib {
 
 	void ExceptionBase::setup(bool enableTrace)
 	{
+#ifdef QT_CORE_LIB
+
+		if (!initialized) {
+			::ExceptionLib::init(qApp->arguments().at(0).toAscii().data());
+		}
+#endif
+
+
 		if (m_nested) {
 			m_nested = m_nested->clone();
 		}

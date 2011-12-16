@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(exception)
 
+OPTION(USE_QT "Flag que determina se o suporte a Qt deve ser compilado")
+
+MESSAGE(STATUS "definitions : ${exception_HEADERS}")
+
+IF (USE_QT)
+    FIND_PACKAGE(Qt4 REQUIRED)
+    INCLUDE(${QT_USE_FILE})
+    ADD_DEFINITIONS(${QT_DEFINITIONS})
+ENDIF(USE_QT)
+
 SET(PLATFORM "autodetect" CACHE STRING "Plataforma, pode ser windows, linux, autodetect ou none")
 
 IF(${PLATFORM} STREQUAL "none")
