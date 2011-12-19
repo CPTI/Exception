@@ -255,7 +255,7 @@ namespace ExceptionLib {
 
   /* Enable global error handling. This function will overwite any handlers for
    * SIGSEGV, SIGFPE, SIGILL and SIGBUS. The C++ terminate handler will also
-   * be overwritten. You don't need to call this method if Qt support is enabled
+   * be overwritten.
    */
   void init(char *argv0);
 }

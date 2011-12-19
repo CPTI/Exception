@@ -111,14 +111,6 @@ namespace ExceptionLib {
 
 	void ExceptionBase::setup(bool enableTrace, const ExceptionBase* nested)
 	{
-#ifdef QT_CORE_LIB
-
-		if (!initialized) {
-			::ExceptionLib::init(qApp->arguments().at(0).toAscii().data());
-		}
-#endif
-
-
 		if (nested) {
 			m_nested = nested->clone();
 		}
