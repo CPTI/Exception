@@ -1,8 +1,16 @@
+
+# inclui o config.pri se existir
+include(../config.pri)
+
 TARGET = exception
+
+
 
 
 TEMPLATE = lib
 CONFIG += static
+
+CONFIG += exception rtti
 
 
 SRC  = ./src
@@ -37,3 +45,30 @@ unix {
 	}
 }
 
+debug {
+	DEFINES -= NDEBUG
+	DEFINES += DEBUG
+	unix {
+		QMAKE_CFLAGS += -g
+		QMAKE_CXXFLAGS += -g
+
+		QMAKE_CFLAGS -= -O2
+		QMAKE_CFLAGS += -O0
+		QMAKE_CXXFLAGS -= -O2
+		QMAKE_CXXFLAGS += -O0
+	}
+}
+
+release {
+	DEFINES += NDEBUG
+	DEFINES -= DEBUG
+	unix {
+		QMAKE_CFLAGS -= -g
+		QMAKE_CXXFLAGS -= -g
+
+		QMAKE_CFLAGS += -O2
+		QMAKE_CFLAGS -= -O0
+		QMAKE_CXXFLAGS += -O2
+		QMAKE_CXXFLAGS -= -O0
+	}
+}
