@@ -105,7 +105,7 @@ namespace ExceptionLib {
 		}
 	}
 
-	void ExceptionBase::setup(bool enableTrace)
+	void ExceptionBase::setup(bool enableTrace, const ExceptionBase* nested)
 	{
 #ifdef QT_CORE_LIB
 
@@ -115,8 +115,8 @@ namespace ExceptionLib {
 #endif
 
 
-		if (m_nested) {
-			m_nested = m_nested->clone();
+		if (nested) {
+			m_nested = nested->clone();
 		}
 		if (stackEnabled && enableTrace) {
 			st = ::Backtrace::trace();
@@ -124,8 +124,8 @@ namespace ExceptionLib {
 	}
 
 
-	Exception::Exception(std::string errorMsg, bool trace) :
-		ExceptionBase(this, trace, errorMsg)
+	Exception::Exception(std::string errorMsg, const Exception* nested, bool trace) :
+		ExceptionBase(this, trace, errorMsg, nested)
 	{  }
 
 	Exception::Exception(const Exception& that) :
