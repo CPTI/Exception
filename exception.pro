@@ -1,6 +1,8 @@
 
 # inclui o config.pri se existir
-include(../config.pri)
+!include(../config.pri) {
+    message("A inclusao do arquivo config.pri eh opcional")
+}
 
 TARGET = exception
 
