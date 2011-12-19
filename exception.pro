@@ -19,11 +19,10 @@ SRC  = ./src
 
 HEADERS += \
 	$$SRC/Exception.h \
-	$$SRC/Backtrace.h \
+        $$SRC/BackTrace.h \
 
 SOURCES += \
-	$$SRC/Exception.h \
-	$$SRC/Backtrace.h \
+        $$SRC/Exception.cpp \
 
 win32 {
 	HEADERS += \
