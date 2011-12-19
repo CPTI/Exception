@@ -205,12 +205,12 @@ namespace ExceptionLib {
   };
 
 
-  class IllegalArgumentException : public ProgrammingError {
+  class IllegalParameterException : public ProgrammingError {
   public:
-	  IllegalArgumentException(std::string errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
+	  IllegalParameterException(std::string errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
-	  IllegalArgumentException(const IllegalArgumentException& that) : ExceptionBase(that), ProgrammingError(that) {}
-      virtual ~IllegalArgumentException() throw () {}
+	  IllegalParameterException(const IllegalParameterException& that) : ExceptionBase(that), ProgrammingError(that) {}
+	  virtual ~IllegalParameterException() throw () {}
   };
 
   class SegmentationFault : public ProgrammingError {
