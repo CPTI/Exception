@@ -208,12 +208,12 @@ namespace ExceptionLib {
   };
 
 
-  class IllegalParameterException : public ProgrammingError {
+  class InvalidParameterException : public ProgrammingError {
   public:
-	  IllegalParameterException(ExString errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
+	  InvalidParameterException(ExString errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
-	  IllegalParameterException(const IllegalParameterException& that) : ExceptionBase(that), ProgrammingError(that) {}
-	  virtual ~IllegalParameterException() throw () {}
+	  InvalidParameterException(const InvalidParameterException& that) : ExceptionBase(that), ProgrammingError(that) {}
+	  virtual ~InvalidParameterException() throw () {}
   };
 
   class SegmentationFault : public ProgrammingError {
