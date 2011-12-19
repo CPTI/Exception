@@ -172,7 +172,7 @@ namespace ExceptionLib {
       /* Typically IOExceptions are expected, so the default is not to create a stacktrace 
        */
 	  IOException(std::string errorMsg = "IOException", bool trace = true ): ExceptionBase(this, trace, errorMsg) {}
-	  IOException(const IOException& that) : ExceptionBase(that) {}
+	  IOException(const IOException& that) : ExceptionBase(that), Exception(that) {}
       virtual ~IOException() throw () {}
   };
 
@@ -183,7 +183,7 @@ namespace ExceptionLib {
   public:
       /* Always enable stacktrace for this */
 	  ProgrammingError(std::string errorMsg = "Programming Error"): ExceptionBase(this, true, errorMsg) {}
-	  ProgrammingError(const ProgrammingError& that) : ExceptionBase(that) {}
+	  ProgrammingError(const ProgrammingError& that) : ExceptionBase(that), Exception(that) {}
       virtual ~ProgrammingError() throw () {}
   };
 
@@ -192,28 +192,28 @@ namespace ExceptionLib {
   public:
       IllegalArgumentException(std::string errorMsg = "IllegalArgumentException") : 
 		ExceptionBase(this, true, errorMsg) {}
-	  IllegalArgumentException(const IllegalArgumentException& that) : ExceptionBase(that) {}
+	  IllegalArgumentException(const IllegalArgumentException& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~IllegalArgumentException() throw () {}
   };
 
   class SegmentationFault : public ProgrammingError {
   public:
 	  SegmentationFault(std::string errorMsg = "SegmentationFault"): ExceptionBase(this, true, errorMsg) {}
-	  SegmentationFault(const SegmentationFault& that) : ExceptionBase(that) {}
+	  SegmentationFault(const SegmentationFault& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~SegmentationFault() throw () {}
   };
 
   class IllegalInstruction : public ProgrammingError {
   public:
 	  IllegalInstruction(std::string errorMsg = "IllegalInstruction"): ExceptionBase(this, true, errorMsg) {}
-	  IllegalInstruction(const IllegalInstruction& that) : ExceptionBase(that) {}
+	  IllegalInstruction(const IllegalInstruction& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~IllegalInstruction() throw () {}
   };
 
   class FloatingPointException : public ProgrammingError {
   public:
 	  FloatingPointException(std::string errorMsg = "FloatingPointException"): ExceptionBase(this, true, errorMsg) {}
-	  FloatingPointException(const FloatingPointException& that) : ExceptionBase(that) {}
+	  FloatingPointException(const FloatingPointException& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~FloatingPointException() throw () {}
   };
 
