@@ -9,7 +9,6 @@
 #define EXCEPTION_H_
 #include <exception>
 #include <stdexcept>
-#include <string>
 #include <ostream>
 
 #ifdef QT_CORE_LIB
@@ -17,9 +16,13 @@
 #include <QString>
 #include <QCoreApplication>
 #include <QList>
+#include <QString>
 	typedef QtConcurrent::Exception BaseExceptionType;
+	typedef QString ExString;
 #else
+#include <string>
 	typedef std::exception BaseExceptionType;
+	typedef std::string ExString;
 #endif
 
 /* This file defines a hierachy of Exception classes that is meant to
@@ -95,7 +98,7 @@ namespace ExceptionLib {
 		ExceptionBase(
 				Ex*,
 				bool enableTrace,
-				const std::string& what = "",
+				const ExString& what = "",
 				// se nested for diferente de null, uma copia é feita com o clone
 				const ExceptionBase* nested = NULL
 					  )
@@ -130,7 +133,7 @@ namespace ExceptionLib {
 		 * the construction of the stacktrace can be disabled using the second argument
 		 * to the constructor. In this case, the method returns "stacktrace not available"
 		 */
-		std::string stacktrace() const;
+		ExString stacktrace() const;
 
 	private:
 		ExceptionBase();
@@ -141,7 +144,7 @@ namespace ExceptionLib {
 
 		mutable ::Backtrace::StackTrace * st;
 
-		std::string m_what;
+		ExString m_what;
 		ExceptionBase* m_nested;
 
 		void setup(bool enableTrace, const ExceptionBase* nested);
@@ -157,7 +160,7 @@ namespace ExceptionLib {
   private:
       Exception& operator=(const Exception&);
   public:
-	  Exception(std::string errorMsg = "Exception", const Exception* nested = NULL, bool trace = true);
+	  Exception(ExString errorMsg = "Exception", const Exception* nested = NULL, bool trace = true);
       /* Exceptions should always be caught by reference, but in case you forget,
        * the copy constructor is defined and does the right thing
        */
@@ -169,7 +172,7 @@ namespace ExceptionLib {
 
   class IOException : public Exception {
   public:
-	  IOException(std::string errorMsg = "IOException", const Exception* nested = NULL, bool trace = true )
+	  IOException(ExString errorMsg = "IOException", const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 	  IOException(const IOException& that) : ExceptionBase(that), Exception(that) {}
       virtual ~IOException() throw () {}
@@ -177,7 +180,7 @@ namespace ExceptionLib {
 
   class InvalidStateException : public Exception {
   public:
-	  InvalidStateException(std::string errorMsg = "InvalidStateException", const Exception* nested = NULL, bool trace = true )
+	  InvalidStateException(ExString errorMsg = "InvalidStateException", const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 	  InvalidStateException(const InvalidStateException& that) : ExceptionBase(that), Exception(that) {}
 	  virtual ~InvalidStateException() throw () {}
@@ -185,7 +188,7 @@ namespace ExceptionLib {
 
   class AbortException : public Exception {
   public:
-	  AbortException(std::string errorMsg = "AbortException", const Exception* nested = NULL, bool trace = true )
+	  AbortException(ExString errorMsg = "AbortException", const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 	  AbortException(const AbortException& that) : ExceptionBase(that), Exception(that) {}
 	  virtual ~AbortException() throw () {}
@@ -198,7 +201,7 @@ namespace ExceptionLib {
   class ProgrammingError : public Exception {
   public:
       /* Always enable stacktrace for this */
-	  ProgrammingError(std::string errorMsg = "Programming Error", const Exception* nested = NULL)
+	  ProgrammingError(ExString errorMsg = "Programming Error", const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 	  ProgrammingError(const ProgrammingError& that) : ExceptionBase(that), Exception(that) {}
       virtual ~ProgrammingError() throw () {}
@@ -207,7 +210,7 @@ namespace ExceptionLib {
 
   class IllegalParameterException : public ProgrammingError {
   public:
-	  IllegalParameterException(std::string errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
+	  IllegalParameterException(ExString errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
 	  IllegalParameterException(const IllegalParameterException& that) : ExceptionBase(that), ProgrammingError(that) {}
 	  virtual ~IllegalParameterException() throw () {}
@@ -215,7 +218,7 @@ namespace ExceptionLib {
 
   class SegmentationFault : public ProgrammingError {
   public:
-	  SegmentationFault(std::string errorMsg = "SegmentationFault", const Exception* nested = NULL)
+	  SegmentationFault(ExString errorMsg = "SegmentationFault", const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 	  SegmentationFault(const SegmentationFault& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~SegmentationFault() throw () {}
@@ -223,7 +226,7 @@ namespace ExceptionLib {
 
   class IllegalInstruction : public ProgrammingError {
   public:
-	  IllegalInstruction(std::string errorMsg = "IllegalInstruction", const Exception* nested = NULL)
+	  IllegalInstruction(ExString errorMsg = "IllegalInstruction", const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 	  IllegalInstruction(const IllegalInstruction& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~IllegalInstruction() throw () {}
@@ -231,7 +234,7 @@ namespace ExceptionLib {
 
   class FloatingPointException : public ProgrammingError {
   public:
-	  FloatingPointException(std::string errorMsg = "FloatingPointException", const Exception* nested = NULL)
+	  FloatingPointException(ExString errorMsg = "FloatingPointException", const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 	  FloatingPointException(const FloatingPointException& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~FloatingPointException() throw () {}

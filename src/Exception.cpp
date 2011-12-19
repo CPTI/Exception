@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
-#include <string>
 #include <vector>
 
 #include "BackTrace.h"
@@ -86,7 +85,11 @@ namespace ExceptionLib {
 
 	const char* ExceptionBase::what() const throw()
 	{
+#ifdef QT_CORE_LIB
+		return m_what.toAscii().data();
+#else
 		return m_what.c_str();
+#endif
 	}
 
 	const ExceptionBase* ExceptionBase::nested() const
@@ -94,10 +97,11 @@ namespace ExceptionLib {
 		return m_nested;
 	}
 
-	std::string ExceptionBase::stacktrace() const
+	ExString ExceptionBase::stacktrace() const
 	{
 		if (st) {
-			return st->getTrace();
+			ExString str = st->getTrace().c_str();
+			return str;
 		} else if (!stackEnabled) {
 			return "stacktrace deactivated";
 		} else {
@@ -124,7 +128,7 @@ namespace ExceptionLib {
 	}
 
 
-	Exception::Exception(std::string errorMsg, const Exception* nested, bool trace) :
+	Exception::Exception(ExString errorMsg, const Exception* nested, bool trace) :
 		ExceptionBase(this, trace, errorMsg, nested)
 	{  }
 
