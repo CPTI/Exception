@@ -180,7 +180,7 @@ namespace {
 						if (func_name) {
 							line[read-1] = ' ';
 							func_name = false;
-							stack << bt[i++] << ": " << line << "at ";
+							stack << bt[i++] << ":\t" << line << "\tat ";
 						} else {
 							func_name = true;
 							stack << line;
