@@ -12,10 +12,9 @@ SET(HEADERS
 )
 
 IF(BUILD_WINDOWS)
-SET(HEADERS ${HEADERS} windows/StackWalker.h)
-SET(SOURCES ${SOURCES} windows/StackWalker.cpp)
 SET(SOURCES ${SOURCES} windows/BackTrace.cpp)
 ADD_DEFINITIONS(-D__WINDOWS__)
+ADD_LIBRARY(stackwalker STATIC windows/StackWalker.cpp windows/StackWalker.h)
 ELSEIF(BUILD_LINUX)
 SET(SOURCES ${SOURCES} linux/BackTrace.cpp)
 ADD_DEFINITIONS(-D__LINUX__)
@@ -29,6 +28,10 @@ ADD_LIBRARY(exception STATIC ${SOURCES} ${HEADERS})
 IF(USE_QT)
     TARGET_LINK_LIBRARIES(exception ${QT_LIBRARIES})
 ENDIF(USE_QT)
+
+IF(BUILD_WINDOWS)
+    TARGET_LINK_LIBRARIES(exception stackwalker)
+ENDIF(BUILD_WINDOWS)
 
 
 ADD_EXECUTABLE(test main.cpp Exception.h)
