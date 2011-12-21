@@ -234,7 +234,7 @@ DWORD64
 #define _tcscat_s _tcscat
 #endif
 
-static void MyStrCpy(char* szDest, size_t nMaxDestSize, const char* szSrc)
+static void MyStrCpy(char* szDest, int nMaxDestSize, const char* szSrc)
 {
   if (nMaxDestSize <= 0) return;
   if (strlen(szSrc) < nMaxDestSize)
@@ -570,7 +570,7 @@ private:
     MODULEENTRY32 me;
     me.dwSize = sizeof(me);
     BOOL keepGoing;
-    size_t i;
+	int i;
 
     for (i = 0; i<(sizeof(dllname) / sizeof(dllname[0])); i++ )
     {
@@ -642,7 +642,7 @@ private:
     HMODULE *hMods = 0;
     char *tt = NULL;
     char *tt2 = NULL;
-    const SIZE_T TTBUFLEN = 8096;
+	const int TTBUFLEN = 8096;
     int cnt = 0;
 
     hPsapi = LoadLibrary( _T("psapi.dll") );
@@ -902,7 +902,7 @@ BOOL StackWalker::LoadModules()
   char *szSymPath = NULL;
   if ( (this->m_options & SymBuildPath) != 0)
   {
-    const size_t nSymPathLen = 4096;
+	const int nSymPathLen = 4096;
     szSymPath = (char*) malloc(nSymPathLen);
     if (szSymPath == NULL)
     {
@@ -919,7 +919,7 @@ BOOL StackWalker::LoadModules()
 
     strcat_s(szSymPath, nSymPathLen, ".;");
 
-    const size_t nTempLen = 1024;
+	const int nTempLen = 1024;
     char szTemp[nTempLen];
     // Now add the current directory:
     if (GetCurrentDirectoryA(nTempLen, szTemp) > 0)
@@ -1254,7 +1254,7 @@ BOOL __stdcall StackWalker::myReadProcMem(
 {
   if (s_readMemoryFunction == NULL)
   {
-    SIZE_T st;
+	int st;
     BOOL bRet = ReadProcessMemory(hProcess, (LPVOID) qwBaseAddress, lpBuffer, nSize, &st);
     *lpNumberOfBytesRead = (DWORD) st;
     //printf("ReadMemory: hProcess: %p, baseAddr: %p, buffer: %p, size: %d, read: %d, result: %d\n", hProcess, (LPVOID) qwBaseAddress, lpBuffer, nSize, (DWORD) st, (DWORD) bRet);
