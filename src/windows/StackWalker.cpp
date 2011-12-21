@@ -224,17 +224,32 @@ DWORD64
 #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 #endif  
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 // secure-CRT_functions are only available starting with VC8
 #if _MSC_VER < 1400
-#define strcpy_s strcpy
-#define strncpy_s strncpy
+#define strcpy_s(dst, len, src) strncpy(dst, src, len)
+#define strncpy_s(dst, dlen, src, slen) strncpy(dst, src, MIN(dlen,slen))
 #define strcat_s(dst, len, src) strcat(dst, src)
 #define _snprintf_s _snprintf
 #define _tcscat_s _tcscat
 #endif
 
-static void MyStrCpy(char* szDest, int nMaxDestSize, const char* szSrc)
+#ifdef __GNUC__
+// MinGW
+
+void MyCaptureContext(CONTEXT* context)
+{
+    HINSTANCE kernel32 = LoadLibrary("kernel32.dll");
+	if (kernel32) {
+		RtlCaptureContextFunc func = (RtlCaptureContextFunc) GetProcAddress(kernel32, "RtlCaptureContext");
+		if (func) {
+			func(context);
+		}
+	}
+}
+#endif
+
 {
   if (nMaxDestSize <= 0) return;
   if (strlen(szSrc) < nMaxDestSize)
@@ -660,7 +675,7 @@ private:
       return FALSE;
     }
 
-    hMods = (HMODULE*) malloc(sizeof(HMODULE) * (TTBUFLEN / sizeof HMODULE));
+    hMods = (HMODULE*) malloc(sizeof(HMODULE) * (TTBUFLEN / sizeof(HMODULE)));
     tt = (char*) malloc(sizeof(char) * TTBUFLEN);
     tt2 = (char*) malloc(sizeof(char) * TTBUFLEN);
     if ( (hMods == NULL) || (tt == NULL) || (tt2 == NULL) )

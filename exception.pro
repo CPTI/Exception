@@ -25,6 +25,7 @@ SOURCES += \
         $$SRC/Exception.cpp \
 
 win32 {
+        DEFINES -= UNICODE
 	HEADERS += \
 		$$SRC/windows/StackWalker.h \
 
