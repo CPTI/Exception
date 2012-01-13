@@ -18,11 +18,9 @@
 #include <QList>
 #include <QString>
 	typedef QtConcurrent::Exception BaseExceptionType;
-	typedef QString ExString;
 #else
 #include <string>
 	typedef std::exception BaseExceptionType;
-	typedef std::string ExString;
 #endif
 
 /* This file defines a hierachy of Exception classes that is meant to
@@ -95,10 +93,10 @@ namespace ExceptionLib {
 
 		// Esse construtor é template para evitar o trabalho do programador
 		template <class Ex>
-		ExceptionBase(
+		explicit ExceptionBase(
 				Ex*,
 				bool enableTrace,
-				const ExString& what = "",
+				const std::string& what = "",
 				// se nested for diferente de null, uma copia é feita com o clone
 				const ExceptionBase* nested = NULL
 					  )
@@ -133,7 +131,7 @@ namespace ExceptionLib {
 		 * the construction of the stacktrace can be disabled using the second argument
 		 * to the constructor. In this case, the method returns "stacktrace not available"
 		 */
-		ExString stacktrace() const;
+		std::string stacktrace() const;
 
 	private:
 		ExceptionBase();
@@ -144,7 +142,7 @@ namespace ExceptionLib {
 
 		mutable ::Backtrace::StackTrace * st;
 
-		ExString m_what;
+		std::string m_what;
 		ExceptionBase* m_nested;
 
 		void setup(bool enableTrace, const ExceptionBase* nested);
@@ -160,7 +158,21 @@ namespace ExceptionLib {
   private:
       Exception& operator=(const Exception&);
   public:
-	  Exception(ExString errorMsg = "Exception", const Exception* nested = NULL, bool trace = true);
+
+	  Exception()
+		  :ExceptionBase(this, true, "Exception", NULL) {}
+
+	  Exception(const char * errorMsg, const Exception* nested = NULL, bool trace = true)
+		  :ExceptionBase(this, trace, errorMsg, nested) {}
+
+	  Exception(std::string errorMsg, const Exception* nested = NULL, bool trace = true)
+		  :ExceptionBase(this, trace, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  Exception(QString errorMsg, const Exception* nested = NULL, bool trace = true)
+		  :ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
+#endif
+
       /* Exceptions should always be caught by reference, but in case you forget,
        * the copy constructor is defined and does the right thing
        */
@@ -172,24 +184,59 @@ namespace ExceptionLib {
 
   class IOException : public Exception {
   public:
-	  IOException(ExString errorMsg = "IOException", const Exception* nested = NULL, bool trace = true )
+
+	  IOException() : ExceptionBase(this, true, "IOException", NULL) {}
+
+	  IOException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+	  IOException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+
+#ifdef QT_CORE_LIB
+	  IOException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
+#endif
+
 	  IOException(const IOException& that) : ExceptionBase(that), Exception(that) {}
       virtual ~IOException() throw () {}
   };
 
   class InvalidStateException : public Exception {
   public:
-	  InvalidStateException(ExString errorMsg = "InvalidStateException", const Exception* nested = NULL, bool trace = true )
+	  InvalidStateException() : ExceptionBase(this, true, "InvalidStateException", NULL) {}
+
+	  InvalidStateException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+	  InvalidStateException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  InvalidStateException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
+#endif
+
 	  InvalidStateException(const InvalidStateException& that) : ExceptionBase(that), Exception(that) {}
 	  virtual ~InvalidStateException() throw () {}
   };
 
   class AbortException : public Exception {
   public:
-	  AbortException(ExString errorMsg = "AbortException", const Exception* nested = NULL, bool trace = true )
+	  AbortException() : ExceptionBase(this, true, "AbortException", NULL) {}
+
+	  AbortException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+	  AbortException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  AbortException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
+#endif
+
 	  AbortException(const AbortException& that) : ExceptionBase(that), Exception(that) {}
 	  virtual ~AbortException() throw () {}
   };
@@ -200,9 +247,20 @@ namespace ExceptionLib {
    */
   class ProgrammingError : public Exception {
   public:
+	  ProgrammingError() : ExceptionBase(this, true, "ProgrammingError", NULL) {}
+
       /* Always enable stacktrace for this */
-	  ProgrammingError(ExString errorMsg = "Programming Error", const Exception* nested = NULL)
+	  ProgrammingError(const char * errorMsg, const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+	  ProgrammingError(std::string errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  ProgrammingError(QString errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
+#endif
+
 	  ProgrammingError(const ProgrammingError& that) : ExceptionBase(that), Exception(that) {}
       virtual ~ProgrammingError() throw () {}
   };
@@ -210,32 +268,77 @@ namespace ExceptionLib {
 
   class InvalidParameterException : public ProgrammingError {
   public:
-	  InvalidParameterException(ExString errorMsg = "IllegalArgumentException", const Exception* nested = NULL)
+	  InvalidParameterException() : ExceptionBase(this, true, "InvalidParameterException", NULL) {}
+
+	  InvalidParameterException(const char * errorMsg, const Exception* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
+
+	  InvalidParameterException(std::string errorMsg, const Exception* nested = NULL)
+		: ExceptionBase(this, true, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  InvalidParameterException(QString errorMsg, const Exception* nested = NULL)
+		: ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
+#endif
+
 	  InvalidParameterException(const InvalidParameterException& that) : ExceptionBase(that), ProgrammingError(that) {}
 	  virtual ~InvalidParameterException() throw () {}
   };
 
   class SegmentationFault : public ProgrammingError {
   public:
-	  SegmentationFault(ExString errorMsg = "SegmentationFault", const Exception* nested = NULL)
+	  SegmentationFault() : ExceptionBase(this, true, "SegmentationFault", NULL) {}
+
+	  SegmentationFault(const char * errorMsg, const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+	  SegmentationFault(std::string errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  SegmentationFault(QString errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
+#endif
+
 	  SegmentationFault(const SegmentationFault& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~SegmentationFault() throw () {}
   };
 
   class IllegalInstruction : public ProgrammingError {
   public:
-	  IllegalInstruction(ExString errorMsg = "IllegalInstruction", const Exception* nested = NULL)
+	  IllegalInstruction() : ExceptionBase(this, true, "IllegalInstruction", NULL) {}
+
+	  IllegalInstruction(const char * errorMsg, const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+	  IllegalInstruction(std::string errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  IllegalInstruction(QString errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
+#endif
+
 	  IllegalInstruction(const IllegalInstruction& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~IllegalInstruction() throw () {}
   };
 
   class FloatingPointException : public ProgrammingError {
   public:
-	  FloatingPointException(ExString errorMsg = "FloatingPointException", const Exception* nested = NULL)
+
+	  FloatingPointException() : ExceptionBase(this, true, "FloatingPointException", NULL) {}
+
+	  FloatingPointException(const char * errorMsg, const Exception* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+	  FloatingPointException(std::string errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg, nested) {}
+
+#ifdef QT_CORE_LIB
+	  FloatingPointException(QString errorMsg, const Exception* nested = NULL)
+		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
+#endif
+
 	  FloatingPointException(const FloatingPointException& that) : ExceptionBase(that), ProgrammingError(that) {}
       virtual ~FloatingPointException() throw () {}
   };

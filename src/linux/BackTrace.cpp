@@ -4,16 +4,17 @@
 #include <errno.h>
 #include <execinfo.h>
 #include <signal.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <vector>
-#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cxxabi.h>
 
 #include <iterator>
+#include <vector>
+#include <sstream>
+
+#ifndef NO_ADDR2LINE
+#include <sys/stat.h>
+#endif
 
 using namespace std;
 using namespace ExceptionLib;
@@ -22,36 +23,8 @@ namespace {
 	static bool executable_found = false;
 	static string executable;
 
-	void segfaulthandler(int signum)
-	{
-		signal(SIGSEGV, SIG_DFL);
-		signal(SIGBUS, SIG_DFL);
-		signal(SIGILL, SIG_DFL);
-		signal(SIGFPE, SIG_DFL);
+#ifndef NO_ADDR2LINE
 
-		switch(signum) {
-			case SIGSEGV:
-				throw SegmentationFault();
-				break;
-			case SIGBUS:
-				throw SegmentationFault();
-				break;
-			case SIGFPE:
-				throw FloatingPointException();
-				break;
-			case SIGILL:
-				throw IllegalInstruction();
-				break;
-			default:
-				throw Exception("Caught unexpected signal");
-				break;
-		}
-
-		signal(SIGSEGV, segfaulthandler);
-		signal(SIGBUS, segfaulthandler);
-		signal(SIGILL, segfaulthandler);
-		signal(SIGFPE, segfaulthandler);
-	}
 
 	char * opt_getcwd (char * stack_buf, int stack_size)
 	{
@@ -135,20 +108,24 @@ namespace {
 			return false;
 		}
 	};
+#endif
 
 
 	class StackTraceLinux: public ::Backtrace::StackTrace {
 	private:
-		void * bt[50];
-		ssize_t size;
+		void * m_bt[50];
+		ssize_t m_size;
+
 	public:
 		StackTraceLinux() {
-			size = backtrace(bt, sizeof(bt)/sizeof(void*));
+			m_size = backtrace(m_bt, sizeof(m_bt)/sizeof(void*));
 		}
 
-		string getTrace() const {
-
+		static string resolveSymbols(void* const addresses[], ssize_t size) {
 			stringstream stack;
+			bool first_way_worked = false;
+
+#ifndef NO_ADDR2LINE
 
 			if (executable_found) {
 
@@ -157,67 +134,220 @@ namespace {
 				command << executable;
 
 				for (int i = 0; i < size; i++) {
-				  command << " " << bt[i];
+					command << " " << addresses[i];
 				}
 				command << " 2>/dev/null";
 
 				FILE *p = popen(command.str().c_str(), "r");
 
 				if (p) {
-				  // workaround
-				  int c = fgetc(p);
-				  if (c != EOF) ungetc(c, p);
+					// workaround
+					int c = fgetc(p);
+					if (c != EOF) ungetc(c, p);
 
-				  if (!feof(p)) {
-					size_t lsize = 256;
-					char * line = (char*) malloc(lsize);
-					ssize_t read;
+					if (!feof(p)) {
+						size_t lsize = 256;
+						char * line = (char*) malloc(lsize);
+						ssize_t read;
 
-					bool func_name = true;
+						bool func_name = true;
 
-					int i = 0;
-					while ((read = getline(&line, &lsize, p)) > 0) {
-						if (func_name) {
-							line[read-1] = ' ';
-							func_name = false;
-							stack << bt[i++] << ":\t" << line << "\tat ";
-						} else {
-							func_name = true;
-							stack << line;
+						int i = 0;
+						while ((read = getline(&line, &lsize, p)) > 0) {
+							if (func_name) {
+								line[read-1] = ' ';
+								func_name = false;
+								stack << addresses[i++] << ":\t" << line << "\tat ";
+							} else {
+								func_name = true;
+								stack << line;
+							}
+						}
+
+						fclose(p);
+						free(line);
+						first_way_worked = true;
+					}
+				}
+			}
+#endif /* NO_ADDR2LINE */
+
+			if (!first_way_worked) {
+				size_t length = 50;
+				int status;
+				char * demangled = (char*)malloc(length);
+
+				char **strings = backtrace_symbols (addresses, size);
+				for (int i = 0; i < size; i++) {
+					bool success = false;
+					char * begin = strstr(strings[i], "_Z");
+					if (begin) {
+						char * pos = 0;
+
+						for (char * c = begin+1; *c != '\0'; ++c) {
+							if (!(isalnum(*c) || *c == '_')) {
+								pos = c;
+								break;
+							}
+						}
+						if (pos) {
+							char c = *pos;
+							*pos = 0;
+							demangled = abi::__cxa_demangle(begin, demangled, &length, &status);
+							if (status == 0 ) {
+								*pos = c;
+								// vamos substituir a string mangled
+								string s;
+								s.insert(s.end(), strings[i], begin);
+								s.append(demangled);
+								s.append(pos);
+
+								stack << s << endl;
+								success = true;
+
+
+
+							} else {
+								*pos = c;
+							}
 						}
 					}
+					if (!success) {
+						stack << strings[i] << endl;
+					}
 
-					fclose(p);
-					free(line);
-				  }
 				}
-			} else {
-				char **strings = backtrace_symbols (bt, size);
-				for (int i = 0; i < size; i++)
-					stack << strings[i] << endl;
 
 				free (strings);
+				if (demangled) {
+					free(demangled);
+				}
 
 			}
 			return stack.str();
 		}
+
+		string getTrace() const {
+			return resolveSymbols(m_bt, m_size);
+		}
 	};
+
+	void segfaulthandler(int signum, siginfo_t * info, void*)
+	{
+		stringstream ss;
+
+		void * addr = info->si_addr;
+		int code = info->si_code;
+
+		switch(signum) {
+			case SIGSEGV:
+			{
+				ss << "Segmentation fault at: " << addr;
+				if (code & SEGV_MAPERR) {
+					ss << ", address not mapped to object";
+				} else if (code & SEGV_ACCERR) {
+					ss << ", invalid permissions for mapped object";
+				}
+				throw SegmentationFault(ss.str());
+				break;
+			}
+			case SIGBUS:
+			{
+				ss << "Bus error at: " << addr;
+				if (code & BUS_ADRALN) {
+					ss << ", invalid address alignment";
+				} else if (code & BUS_ADRERR) {
+					ss << ", nonexistent physical address";
+				} else if (code & BUS_OBJERR) {
+					ss << ", object-specific hardware error";
+				}
+				throw SegmentationFault(ss.str());
+				break;
+			}
+			case SIGFPE:
+			{
+				ss << "Floating point error at: " << addr;
+				if (code & FPE_INTDIV) {
+					ss << ", integer divide by zero";
+				} else if (code & FPE_INTOVF) {
+					ss << ", integer overflow";
+				} else if (code & FPE_FLTDIV) {
+					ss << ", floating-point divide by zero";
+				} else if (code & FPE_FLTOVF) {
+					ss << ", floating-point overflow";
+				} else if (code & FPE_FLTUND) {
+					ss << ", floating-point underflow";
+				} else if (code & FPE_FLTRES) {
+					ss << ", floating-point inexact result";
+				} else if (code & FPE_FLTINV) {
+					ss << ", floating-point invalid operation";
+				} else if (code & FPE_FLTSUB) {
+					ss << ", subscript out of range";
+				}
+				throw FloatingPointException(ss.str());
+				break;
+			}
+			case SIGILL:
+			{
+				ss << "Illegal instruction at: " << addr;
+				if (code & ILL_ILLOPC) {
+					ss << ", illegal opcode";
+				} else if (code & ILL_ILLOPN) {
+					ss << ", illegal operand";
+				} else if (code & ILL_ILLADR) {
+					ss << ", illegal addressing mode";
+				} else if (code & ILL_ILLTRP) {
+					ss << ", illegal trap";
+				} else if (code & ILL_PRVOPC) {
+					ss << ", privileged opcode";
+				} else if (code & ILL_PRVREG) {
+					ss << ", privileged register";
+				} else if (code & ILL_COPROC) {
+					ss << ", coprocessor error";
+				} else if (code & ILL_BADSTK) {
+					ss << ", internal stack error";
+				}
+				throw IllegalInstruction(ss.str());
+				break;
+			}
+			default:
+			{
+				ss << "Caught unexpected signal: " << info->si_signo << addr;
+				throw Exception(ss.str());
+				break;
+			}
+		}
+	}
 
 }
 
-
+#include <iostream>
+using namespace std;
 
 namespace Backtrace {
 	void initialize(const char* argv0)
 	{
+#ifndef NO_ADDR2LINE
 		Finder finder;
 		string rel_path(argv0);
 		executable_found = finder.whereis(rel_path, executable);
+#endif
 
-		signal(SIGSEGV, segfaulthandler);
-		signal(SIGBUS, segfaulthandler);
-		signal(SIGILL, segfaulthandler);
-		signal(SIGFPE, segfaulthandler);
+		struct sigaction action;
+
+		action.sa_handler = 0;
+		action.sa_sigaction = segfaulthandler;
+		sigemptyset (&action.sa_mask);
+		sigaddset(&action.sa_mask, SIGSEGV);
+		sigaddset(&action.sa_mask, SIGBUS);
+		sigaddset(&action.sa_mask, SIGILL);
+		sigaddset(&action.sa_mask, SIGFPE);
+		action.sa_flags = SA_SIGINFO;
+
+		sigaction(SIGSEGV, &action, NULL);
+		sigaction(SIGBUS, &action, NULL);
+		sigaction(SIGILL, &action, NULL);
+		sigaction(SIGFPE, &action, NULL);
 	}
 
 

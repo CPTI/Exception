@@ -29,13 +29,39 @@ namespace ExceptionLib {
 
 	void terminate_handler()
 	{
-		cerr << "Caught unhandled exception" << endl;
+#ifdef __GNUC__
+		static bool tried_throw = false;
 
-		if (stackEnabled && ::Backtrace::backtraceSupported()) {
-			::Backtrace::StackTrace* trace = ::Backtrace::trace();
-			cerr << trace->getTrace() << endl;
-			delete trace;
+		try {
+			if (!tried_throw) {
+				tried_throw = true;
+				throw;
+			}
+			cerr << "no active exception" << endl;
 		}
+		catch (const ExceptionLib::Exception& ex) {
+			cerr << "Caught an Exception: what: " << ex.what() << endl;
+			string trace = ex.stacktrace();
+			cerr << "stacktrace: " << endl << trace << endl;
+
+			const ExceptionBase * eptr = &ex;
+			while(eptr->nested()) {
+				eptr = eptr->nested();
+				cerr << "Nested exception: what: " << eptr->what() << endl;
+				trace = eptr->stacktrace();
+				cerr << "stacktrace: " << endl << trace << endl;
+			}
+
+		}
+		catch (const std::exception &ex) {
+			cout << "Caught an std::exception. what(): " << ex.what() << endl;
+		}
+		catch (...) {
+			std::cout << "Caught unknown exception" << std::endl;
+		}
+#else
+		cerr << "Caught unhandled exception" << endl;
+#endif
 	}
 
 	void init(char *argv0)
@@ -85,11 +111,7 @@ namespace ExceptionLib {
 
 	const char* ExceptionBase::what() const throw()
 	{
-#ifdef QT_CORE_LIB
-		return m_what.toAscii().data();
-#else
 		return m_what.c_str();
-#endif
 	}
 
 	const ExceptionBase* ExceptionBase::nested() const
@@ -97,11 +119,10 @@ namespace ExceptionLib {
 		return m_nested;
 	}
 
-	ExString ExceptionBase::stacktrace() const
+	std::string ExceptionBase::stacktrace() const
 	{
 		if (st) {
-			ExString str = st->getTrace().c_str();
-			return str;
+			return st->getTrace();
 		} else if (!stackEnabled) {
 			return "stacktrace deactivated";
 		} else {
@@ -118,11 +139,6 @@ namespace ExceptionLib {
 			st = ::Backtrace::trace();
 		}
 	}
-
-
-	Exception::Exception(ExString errorMsg, const Exception* nested, bool trace) :
-		ExceptionBase(this, trace, errorMsg, nested)
-	{  }
 
 	Exception::Exception(const Exception& that) :
 		ExceptionBase(that)
