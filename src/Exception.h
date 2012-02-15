@@ -162,14 +162,14 @@ namespace ExceptionLib {
 	  Exception()
 		  :ExceptionBase(this, true, "Exception", NULL) {}
 
-	  Exception(const char * errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(const char * errorMsg, const Exception* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg, nested) {}
 
-	  Exception(std::string errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(std::string errorMsg, const Exception* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  Exception(QString errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(QString errorMsg, const Exception* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
 
