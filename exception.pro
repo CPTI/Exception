@@ -1,4 +1,5 @@
 
+RTSCAN_DIR = ../
 # inclui o config.pri se existir
 !include(../config.pri) {
     message("A inclusao do arquivo config.pri eh opcional")
