@@ -19,13 +19,13 @@ SRC  = ./src
 
 HEADERS += \
 	$$SRC/Exception.h \
-        $$SRC/BackTrace.h \
+	$$SRC/BackTrace.h \
 
 SOURCES += \
-        $$SRC/Exception.cpp \
+	$$SRC/Exception.cpp \
 
 win32 {
-        DEFINES -= UNICODE
+	DEFINES -= UNICODE
 	HEADERS += \
 		$$SRC/windows/StackWalker.h \
 
