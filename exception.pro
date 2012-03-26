@@ -20,9 +20,12 @@ SRC  = ./src
 HEADERS += \
 	$$SRC/Exception.h \
 	$$SRC/BackTrace.h \
+    src/Software.h \
+    src/Error.h
 
 SOURCES += \
 	$$SRC/Exception.cpp \
+    src/Error.cpp
 
 win32 {
 	DEFINES -= UNICODE
@@ -74,3 +77,6 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
+
+
