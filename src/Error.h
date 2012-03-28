@@ -42,13 +42,13 @@ class QString;
 		Error::disconnect(software, sender, #sender, signal, receiver, #receiver, member, __FILE__, __LINE__)
 #else
 	#define TRY_CONNECT_MODE(software, sender, signal, receiver, member, mode) \
-		QObject::connect(sender, #sender, signal, receiver, #receiver, member, mode)
+        QObject::connect(sender, signal, receiver, member, mode)
 
 	#define TRY_CONNECT(software, sender, signal, receiver, member) \
-		QObject::connect(sender, #sender, signal, receiver, #receiver, member, Qt::AutoConnection)
+        QObject::connect(sender, signal, receiver, member, Qt::AutoConnection)
 
 	#define TRY_DISCONNECT(software, sender, signal, receiver, member) \
-		QObject::disconnect(sender, #sender, signal, receiver, #receiver, member)
+        QObject::disconnect(sender, signal, receiver, member)
 #endif
 
 
