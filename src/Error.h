@@ -5,6 +5,7 @@
 #define ERRO_H
 
 #include "Software.h"
+#include <stddef.h>
 
 #include <QObject>
 
@@ -50,6 +51,74 @@ class QString;
 	#define TRY_DISCONNECT(software, sender, signal, receiver, member) \
         QObject::disconnect(sender, signal, receiver, member)
 #endif
+
+/* cast<>
+ *
+ * Um operador para upcast e downcast. Ao contrário do dynamic_cast para ponteiros,
+ * para esse cast é um erro se a conversão não funcionar.
+ *
+ * Em modo debug esse cast usa o dynamic_cast para garantir que a conversão
+ * funcionou. Isto é, se o argumento for um ponteiro não-nulo o retorno nunca
+ * poderá ser um ponteiro nulo. Caso o conversão não seja possível, levanta
+ * uma exceção assim como o dynamic_cast de referências.
+ *
+ * Em modo release assumimos que o código está suficientemente testado e não contém
+ * mais erros de conversão. Assim, neste modo, usamos o static_cast que é muito mais
+ * rápido.
+ *
+ * Nunca use este cast para peguntar se um objeto é de determinado tipo.
+ *
+ */
+#ifdef DEBUG
+
+template<class To, class From>
+struct cast_impl;
+
+template<class To, class From>
+struct cast_impl<To&, From>
+{
+	typedef To& ret_type;
+	static ret_type cast(const From& f) {
+		return dynamic_cast<ret_type>(f);
+	}
+};
+
+
+template<class To, class From>
+struct cast_impl<const To&, From&>
+{
+	typedef const To& ret_type;
+	static ret_type cast(From& f) {
+		return dynamic_cast<ret_type>(f);
+	}
+};
+
+
+template<class To, class From>
+struct cast_impl<To*, From*>
+{
+	typedef To* ret_type;
+	static ret_type cast(From* f) {
+		if (f == NULL) { return NULL; }
+		// O dynamic_cast de referencias levanta exception
+		return &cast_impl<To&, From&>::cast(*f);
+	}
+};
+
+template<class To, class From>
+typename cast_impl<To,From>::ret_type cast(const From& f) {
+	return cast_impl<To,From>::cast(f);
+}
+
+#else
+
+template<class To, class From>
+To cast(const From& f) {
+	return static_cast<To>(f);
+}
+
+#endif
+
 
 
 /*! \brief Singleton que fornece mecanismos para tratar de falhas. */
