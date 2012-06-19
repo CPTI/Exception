@@ -93,6 +93,15 @@ struct cast_impl<const To&, From&>
 	}
 };
 
+template<class To, class From>
+struct cast_impl<To&, From&>
+{
+	typedef To& ret_type;
+	static ret_type cast(From& f) {
+		return dynamic_cast<ret_type>(f);
+	}
+};
+
 
 template<class To, class From>
 struct cast_impl<To*, From*>
