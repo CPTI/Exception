@@ -72,7 +72,8 @@ namespace ExceptionLib {
 	}
 
 	ExceptionBase::ExceptionBase(const ExceptionBase& that)
-		: m_raiser(that.m_raiser)
+		: BaseExceptionType()
+		, m_raiser(that.m_raiser)
 		, m_cloner(that.m_cloner)
 		, st(NULL)
 		, m_what(that.m_what)
