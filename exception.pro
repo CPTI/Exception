@@ -17,15 +17,21 @@ CONFIG += exception rtti
 
 SRC  = ./src
 
+INCLUDEPATH += \
+        $$SRC \
+
+
 HEADERS += \
-	$$SRC/Exception.h \
 	$$SRC/BackTrace.h \
-    src/Software.h \
-    src/Error.h
+        $$SRC/Error.h \
+        $$SRC/Exception.h \
+        $$SRC/IStackAddressLoader.h \
+        $$SRC/Software.h \
 
 SOURCES += \
-	$$SRC/Exception.cpp \
-    src/Error.cpp
+        $$SRC/Error.cpp \
+        $$SRC/Exception.cpp \
+
 
 win32 {
 	DEFINES -= UNICODE
@@ -46,6 +52,7 @@ unix {
 	} else {
 		SOURCES += \
 			$$SRC/linux/BackTrace.cpp \
+                        $$SRC/linux/StackLoader.cpp \
 
 	}
 }
@@ -77,6 +84,8 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
+
 
 
 
