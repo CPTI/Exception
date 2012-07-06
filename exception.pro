@@ -41,6 +41,7 @@ win32 {
 	SOURCES += \
 		$$SRC/windows/StackWalker.cpp \
 		$$SRC/windows/BackTrace.cpp \
+                $$SRC/windows/StackLoader.cpp \
 
 }
 
