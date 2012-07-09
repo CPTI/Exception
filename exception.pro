@@ -27,6 +27,8 @@ HEADERS += \
         $$SRC/Exception.h \
         $$SRC/IStackAddressLoader.h \
         $$SRC/Software.h \
+        $$SRC/SymbolLoader.h \
+
 
 SOURCES += \
         $$SRC/Error.cpp \
@@ -48,12 +50,13 @@ win32 {
 unix {
 	macx {
 		SOURCES += \
-			$$SRC/default/BackTrace.cpp \
+                        $$SRC/default/BackTrace.cpp \
 
 	} else {
 		SOURCES += \
 			$$SRC/linux/BackTrace.cpp \
                         $$SRC/linux/StackLoader.cpp \
+                        $$SRC/linux/SymbolLoader.cpp \
 
 	}
 }
@@ -85,6 +88,9 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
+
+
 
 
 

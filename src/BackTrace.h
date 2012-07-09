@@ -6,8 +6,18 @@
  */
 
 #include <string>
+#include <stdint.h>
 
 namespace Backtrace {
+
+	struct StackFrame {
+		void* addr;
+		std::string function;
+		int line;
+		std::string sourceFile;
+		std::string imageFile;
+		StackFrame() : addr(0), function(""), line(-1), sourceFile(""), imageFile("") {}
+	};
 
 	class StackTrace {
 	public:
@@ -15,6 +25,8 @@ namespace Backtrace {
 		StackTrace() : m_referenceCount(1) {}
 
 		virtual ~StackTrace() {}
+
+		//virtual std::string getDetailedTrace() const = 0;
 		virtual std::string getTrace() const = 0;
 
 		void increaseCount() {
