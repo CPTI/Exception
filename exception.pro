@@ -59,7 +59,7 @@ unix {
 
                 bfd {
                         SOURCES += \
-                            $$SRC/bfd/SymbolLoader.cpp
+                            $$SRC/bfd/DebugSymbolLoader.cpp
                 } else {
                         SOURCES += \
                             $$SRC/linux/DebugSymbolLoader.cpp
