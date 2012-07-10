@@ -25,9 +25,9 @@ HEADERS += \
 	$$SRC/BackTrace.h \
         $$SRC/Error.h \
         $$SRC/Exception.h \
-        $$SRC/IStackAddressLoader.h \
+        $$SRC/StackAddressLoader.h \
         $$SRC/Software.h \
-        $$SRC/SymbolLoader.h \
+        $$SRC/DebugSymbolLoader.h \
 
 
 SOURCES += \
@@ -62,7 +62,7 @@ unix {
                             $$SRC/bfd/SymbolLoader.cpp
                 } else {
                         SOURCES += \
-                            $$SRC/linux/SymbolLoader.cpp
+                            $$SRC/linux/DebugSymbolLoader.cpp
                 }
 	}
 }

@@ -1,4 +1,4 @@
-#include "SymbolLoader.h"
+#include "DebugSymbolLoader.h"
 
 
 #include <cxxabi.h>
@@ -11,9 +11,9 @@
 #include <errno.h>
 #include <execinfo.h>
 #include <string.h>
-#ifndef NO_ADDR2LINE
+
 #include <sys/stat.h>
-#endif
+
 
 using namespace std;
 
@@ -21,7 +21,6 @@ namespace {
 	static bool executable_found = false;
 	static string executable;
 
-#ifndef NO_ADDR2LINE
 
 
 	char * opt_getcwd (char * stack_buf, int stack_size)
@@ -106,68 +105,20 @@ namespace {
 			return false;
 		}
 	};
-#endif
 
 }
 
 
 namespace Backtrace {
 
-	class Addr2LineSymbolLoader: public ISymbolLoader {
+	class Addr2LineSymbolLoader: public IDebugSymbolLoader {
 	public:
 
-		virtual void findSymbol(StackFrame* frames, int nFrames) {
-
-			size_t length = 50;
-			int status;
-			char * demangled = (char*)malloc(length);
 
 
-			for (int i = 0; i < nFrames; i++) {
-				char **strings = backtrace_symbols (&frames[i].addr, 1);
-				bool success = false;
-				char * begin = strstr(strings[0], "_Z");
-				if (begin) {
+		virtual bool findDebugInfo(StackFrame* frames, int nFrames) {
 
-					frames[i].imageFile.clear();
-					frames[i].imageFile.append(strings[0], begin-1-strings[0]);
-
-					char * pos = 0;
-
-					for (char * c = begin+1; *c != '\0'; ++c) {
-						if (!(isalnum(*c) || *c == '_')) {
-							pos = c;
-							break;
-						}
-					}
-					if (pos) {
-						char c = *pos;
-						*pos = 0;
-						demangled = abi::__cxa_demangle(begin, demangled, &length, &status);
-						if (status == 0 ) {
-							*pos = c;
-							frames[i].function = demangled;
-							success = true;
-						}
-						*pos = c;
-					}
-				}
-				if (!success) {
-					frames[i].function = strings[0];
-				}
-				free (strings);
-			}
-			if (demangled) {
-				free(demangled);
-			}
-		}
-
-		virtual void findSymbolAndDebugInfo(StackFrame* frames, int nFrames) {
-			bool first_way_worked = false;
-
-#ifndef NO_ADDR2LINE
-
-			if (executable_found) {
+			if (executable_found && nFrames > 0) {
 
 				stringstream command;
 				command << "addr2line -Cife ";
@@ -218,31 +169,27 @@ namespace Backtrace {
 
 						fclose(p);
 						free(line);
-						first_way_worked = true;
+						return true;
 					}
 				}
+			} else {
+				return true;
 			}
-#endif /* NO_ADDR2LINE */
-
-			if (!first_way_worked) {
-				findSymbol(frames, nFrames);
-			}
+			return false;
 		}
 	};
 
 
-	ISymbolLoader& getPlatformSymbolLoader()
+	IDebugSymbolLoader& getPlatformDebugSymbolLoader()
 	{		
 		static Addr2LineSymbolLoader instance;
 		return instance;
 	}
 
 	void initializeExecutablePath(const char* argv0) {
-#ifndef NO_ADDR2LINE
 		Finder finder;
 		string rel_path(argv0);
 		executable_found = finder.whereis(rel_path, executable);
-#endif
 	}
 
 }

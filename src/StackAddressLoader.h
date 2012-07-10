@@ -2,6 +2,7 @@
 #define ISTACKADDRESSLOADER_H
 
 #include <stdint.h>
+#include "BackTrace.h"
 
 namespace Backtrace {
 
@@ -13,9 +14,9 @@ namespace Backtrace {
 
 		// Returns the current callstack starting at the calling function
 		// At most depth addresses are loaded. The return value is the
-		// actual number of stack addresses. The function may overwrite the
-		// area of memory between addrs[ret_val-1] and addres[depth-1]
-		virtual int getStack(int depth, void** addrs) = 0;
+		// actual number of stack addresses loaded. The complete filesystem path
+		// for each module is loaded as well, if possible
+		virtual int getStack(int depth, StackFrame* frames) = 0;
 
 	};
 
