@@ -6,7 +6,9 @@
  */
 
 #include <string>
+#include <vector>
 #include <stdint.h>
+#include <sstream>
 
 namespace Backtrace {
 
@@ -24,10 +26,21 @@ namespace Backtrace {
 
 		StackTrace() : m_referenceCount(1) {}
 
-		virtual ~StackTrace() {}
+		~StackTrace() {}
 
-		//virtual std::string getDetailedTrace() const = 0;
-		virtual std::string getTrace() const = 0;
+		std::string asString() const {
+			std::stringstream ss;
+			for (size_t i = 0; i < m_frames.size(); ++i) {
+				ss << m_frames[i].addr << ":  " << m_frames[i].function << " in (" << m_frames[i].imageFile << ")";
+				if (m_frames[i].line >= 0) {
+					ss << " at " << m_frames[i].sourceFile << ": " << m_frames[i].line;
+				}
+				ss << "\n";
+			}
+			return ss.str();
+		}
+
+		std::vector<StackFrame>& getFrames() { return m_frames; }
 
 		void increaseCount() {
 			++m_referenceCount;
@@ -42,6 +55,7 @@ namespace Backtrace {
 
 	private:
 		int m_referenceCount;
+		std::vector<StackFrame> m_frames;
 	};
 
 	void initialize(const char* argv0);

@@ -37,20 +37,25 @@ SOURCES += \
 
 win32 {
 	DEFINES -= UNICODE
-	HEADERS += \
-		$$SRC/windows/StackWalker.h \
 
-	SOURCES += \
-		$$SRC/windows/StackWalker.cpp \
+
+        SOURCES += \
 		$$SRC/windows/BackTrace.cpp \
                 $$SRC/windows/StackLoader.cpp \
+
+        bfd {
+            SOURCES += $$SRC/bfd/DebugSymbolLoader.cpp
+        } else {
+            SOURCES += $$SRC/default/DebugSymbolLoader.cpp
+        }
 
 }
 
 unix {
 	macx {
 		SOURCES += \
-                        $$SRC/default/BackTrace.cpp \
+                        $$SRC/default/StackLoader.cpp \
+                        $$SRC/default/DebugSymbolLoader.cpp \
 
 	} else {
 		SOURCES += \

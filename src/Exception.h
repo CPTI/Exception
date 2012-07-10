@@ -23,6 +23,7 @@
 	typedef std::exception BaseExceptionType;
 #endif
 
+
 /* This file defines a hierachy of Exception classes that is meant to
  * unify the definition and treatment of exceptions. All exceptions
  * inherit from std::exception, thus making it easier to integrate with
@@ -131,7 +132,7 @@ namespace ExceptionLib {
 		 * the construction of the stacktrace can be disabled using the second argument
 		 * to the constructor. In this case, the method returns "stacktrace not available"
 		 */
-		std::string stacktrace() const;
+		Backtrace::StackTrace* stacktrace() const;
 
 	private:
 		ExceptionBase();

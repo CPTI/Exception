@@ -1,44 +1,23 @@
-#include "../BackTrace.h"
-#include "StackWalker.h"
+#include "BackTrace.h"
+#include "StackAddressLoader.h"
+#include "DebugSymbolLoader.h"
 
-namespace {
-	class BackTraceWindows: public StackWalker, public ::Backtrace::StackTrace
-{
-public:
-	BackTraceWindows() : m_foundMe(false) {
-		this->ShowCallstack();
-	}
-
-	std::string getTrace() const {
-		return m_trace;
-	}
-
-protected:
-	virtual void OnOutput(LPCSTR szText)
-	{
-		std::string text(szText);
-
-		// Elimina um monte de lixo que ninguem quer ver
-		if (!m_foundMe) {
-			if (text.find("BackTraceWindows") != std::string::npos) {
-				m_foundMe = true;
-			}
-		} else {
-			m_trace += szText;
-		}
-	}
-private:
-	bool m_foundMe;
-	std::string m_trace;
-};
-}
 
 namespace Backtrace {
-	void initialize(const char*) {}
+	void initialize(const char*) {
+		initializeExecutablePath();
+	}
 
 	StackTrace* trace()
 	{
-		return new BackTraceWindows();
+		const int MAX_STACK = 32;
+		std::auto_ptr<StackTrace> trace(new StackTrace());
+		trace->getFrames().resize(MAX_STACK);
+		const int num = getPlatformStackLoader().getStack(MAX_STACK, &trace->getFrames()[0]);
+		trace->getFrames().resize(num);
+		getPlatformDebugSymbolLoader().findDebugInfo(&trace->getFrames()[0], num);
+
+		return trace.release();
 	}
 
 	bool backtraceSupported()

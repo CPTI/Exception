@@ -41,8 +41,12 @@ namespace ExceptionLib {
 		}
 		catch (const ExceptionLib::Exception& ex) {
 			cerr << "Caught an Exception: what: " << ex.what() << endl;
-			string trace = ex.stacktrace();
-			cerr << "stacktrace: " << endl << trace << endl;
+			Backtrace::StackTrace* trace = ex.stacktrace();
+			if (trace) {
+				cerr << "stacktrace: " << endl << trace->asString() << endl;
+			} else {
+				cerr << "stacktrace: not available" << endl;
+			}
 
 			const ExceptionBase * eptr = &ex;
 			while(eptr->nested()) {
@@ -120,14 +124,12 @@ namespace ExceptionLib {
 		return m_nested;
 	}
 
-	std::string ExceptionBase::stacktrace() const
+	Backtrace::StackTrace* ExceptionBase::stacktrace() const
 	{
 		if (st) {
-			return st->getTrace();
-		} else if (!stackEnabled) {
-			return "stacktrace deactivated";
+			return st;
 		} else {
-			return "stacktrace not available";
+			return NULL;
 		}
 	}
 
