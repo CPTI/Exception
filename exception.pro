@@ -56,8 +56,14 @@ unix {
 		SOURCES += \
 			$$SRC/linux/BackTrace.cpp \
                         $$SRC/linux/StackLoader.cpp \
-                        $$SRC/linux/SymbolLoader.cpp \
 
+                bfd {
+                        SOURCES += \
+                            $$SRC/bfd/SymbolLoader.cpp
+                } else {
+                        SOURCES += \
+                            $$SRC/linux/SymbolLoader.cpp
+                }
 	}
 }
 
