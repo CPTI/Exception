@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <string.h>
-#include <cxxabi.h>
+#include <string>
+#include <execinfo.h>
 #include "Demangling.h"
+using namespace std;
 
 namespace Backtrace {
 
@@ -59,7 +61,7 @@ namespace Backtrace {
 
                         bool dem_success = Demangling::demangle(begin, demangled);
 
-                        if (dem_success == 0 ) {
+						if (dem_success) {
 							frames[i-1].function = demangled;
 							success = true;
 						}
