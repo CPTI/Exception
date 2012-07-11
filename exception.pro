@@ -28,11 +28,13 @@ HEADERS += \
         $$SRC/StackAddressLoader.h \
         $$SRC/Software.h \
         $$SRC/DebugSymbolLoader.h \
+        $$SRC/Demangling.h \
 
 
 SOURCES += \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
+        $$SRC/Demangling.cpp \
 
 
 win32 {

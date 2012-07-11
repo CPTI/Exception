@@ -2,10 +2,11 @@
 #include "StackAddressLoader.h"
 #include "DebugSymbolLoader.h"
 
+#include <memory>
 
 namespace Backtrace {
-	void initialize(const char*) {
-		initializeExecutablePath();
+    void initialize(const char* argv0) {
+        initializeExecutablePath(argv0);
 	}
 
 	StackTrace* trace()

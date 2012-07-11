@@ -7,20 +7,10 @@
 #include <vector>
 
 // TODO: substituir por std::mutex quando existir
-#include <pthread.h>
+#include <QMutex>
 
-namespace {
-	class Locker {
-		pthread_mutex_t* m_mutex;
-	public:
-		Locker(pthread_mutex_t* mutex) : m_mutex(mutex) {
-			pthread_mutex_lock(m_mutex);
-		}
-		~Locker() {
-			pthread_mutex_unlock(m_mutex);
-		}
-	};
-}
+#include "Demangling.h"
+
 
 using namespace std;
 
@@ -40,8 +30,7 @@ namespace Backtrace {
 	public:
 
 		BFDSymbolLoader()
-		{
-			pthread_mutex_init(&m_mutex, NULL);
+        {
 		}
 
 		~BFDSymbolLoader() {
@@ -67,6 +56,10 @@ namespace Backtrace {
 					find(ctx, frames[i].addr, source, function, line);
 					frames[i].sourceFile = source;
 					frames[i].line = line;
+
+                    if (!Demangling::demangle(function.c_str(), frames[i].function)) {
+                        frames[i].function = function;
+                    }
 				}
 			}
 			return false;
@@ -74,10 +67,10 @@ namespace Backtrace {
 
 	private:
 		context_map m_contexts;
-		pthread_mutex_t m_mutex;
+        QMutex m_mutex;
 
 		BFD_context& getBFD(const std::string& moduleName) {
-			Locker locker(&m_mutex);
+            QMutexLocker locker(&m_mutex);
 			context_map::iterator it = m_contexts.find(moduleName);
 			if (it != m_contexts.end()) {
 				return it->second;

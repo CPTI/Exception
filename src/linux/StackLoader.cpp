@@ -1,9 +1,9 @@
 #include "StackAddressLoader.h"
 
-#include  <execinfo.h>
 #include <algorithm>
 #include <string.h>
 #include <cxxabi.h>
+#include "Demangling.h"
 
 namespace Backtrace {
 
@@ -20,11 +20,9 @@ namespace Backtrace {
 
 			///////////////////////////////////////////////////////
 
-			size_t length = 50;
-			int status;
-			char * demangled = (char*)malloc(length);
-
 			char **strings = backtrace_symbols (addrs, effDepth);
+
+
 
 			// pula o frame deste metodo
 			for (int i = 1; i < effDepth; i++) {
@@ -56,9 +54,12 @@ namespace Backtrace {
 					if (pos) {
 						char c = *pos;
 						*pos = 0;
-						demangled = abi::__cxa_demangle(begin, demangled, &length, &status);
-						if (status == 0 ) {
-							*pos = c;
+
+                        string demangled;
+
+                        bool dem_success = Demangling::demangle(begin, demangled);
+
+                        if (dem_success == 0 ) {
 							frames[i-1].function = demangled;
 							success = true;
 						}
@@ -68,10 +69,7 @@ namespace Backtrace {
 				if (!success) {
 					frames[i-1].function = strings[i];
 				}
-			}
-			if (demangled) {
-				free(demangled);
-			}
+            }
 			free (strings);
 
 			return effDepth - 1;

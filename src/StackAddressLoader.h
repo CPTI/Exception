@@ -14,8 +14,9 @@ namespace Backtrace {
 
 		// Returns the current callstack starting at the calling function
 		// At most depth addresses are loaded. The return value is the
-		// actual number of stack addresses loaded. The complete filesystem path
-		// for each module is loaded as well, if possible
+        // actual number of stack addresses loaded. Only the addresses are
+        // guaranteed to be loaded, But implementations can load the function
+        // name and the module file name.
 		virtual int getStack(int depth, StackFrame* frames) = 0;
 
 	};
