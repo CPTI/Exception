@@ -6,7 +6,7 @@
 
 TARGET = exception
 
-
+OTHER_FILES += setup.pri
 
 
 TEMPLATE = lib
