@@ -148,8 +148,12 @@ namespace Backtrace {
 			data.line = 0;
 
 			bfd_map_over_sections(b.handle, &lookup_section, &data);
-			file = data.file;
-			func = data.func;
+			if (data.file) {
+				file = data.file;
+			}
+			if (data.func) {
+				func = data.func;
+			}
 			line = data.line;
 		}
 
