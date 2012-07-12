@@ -4,21 +4,21 @@ INCLUDEPATH += $$PWD/src
 
 win32 {
     win32-g++ {
-	LIBS += -lexception -limagehlp
+        EXCEPTION_LIBS += -lexception -limagehlp
 	bfd {
-	    LIBS += -lbfd -liberty
+            EXCEPTION_LIBS += -lbfd -liberty
         }
     } else {
-	LIBS += exception.lib imagehlp.lib
+        EXCEPTION_LIBS += exception.lib imagehlp.lib
     }
     POST_TARGETDEPS += $$BUILD_DIR/libexception.lib
 }
 
 
 unix {
-    LIBS += -lexception
+    EXCEPTION_LIBS += -lexception
     bfd {
-        LIBS += -lbfd -ldl -lz -liberty
+        EXCEPTION_LIBS += -lbfd -ldl -lz -liberty
     }
 
     POST_TARGETDEPS += $$BUILD_DIR/libexception.a
