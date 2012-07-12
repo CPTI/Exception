@@ -74,6 +74,10 @@ unix {
 	}
 }
 
+QMAKE_CFLAGS -= -O2
+
+QMAKE_CXXFLAGS -= -O2
+
 debug {
 	DEFINES -= NDEBUG
 	DEFINES += DEBUG
@@ -95,9 +99,9 @@ release {
 		QMAKE_CFLAGS -= -g
 		QMAKE_CXXFLAGS -= -g
 
-		QMAKE_CFLAGS += -O2
+                #QMAKE_CFLAGS += -O2
 		QMAKE_CFLAGS -= -O0
-		QMAKE_CXXFLAGS += -O2
+                #QMAKE_CXXFLAGS += -O2
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
