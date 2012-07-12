@@ -11,7 +11,6 @@ win32 {
     } else {
         EXCEPTION_LIBS += exception.lib imagehlp.lib
     }
-    POST_TARGETDEPS += $$BUILD_DIR/libexception.lib
 }
 
 
@@ -20,6 +19,4 @@ unix {
     bfd {
         EXCEPTION_LIBS += -lbfd -ldl -lz -liberty
     }
-
-    POST_TARGETDEPS += $$BUILD_DIR/libexception.a
 }
