@@ -1,6 +1,6 @@
 # exportacao e configuracoes de build
 
-INCLUDEPATH += $$PWD/src
+INCLUDEPATH += $$PWD/project/src
 
 win32 {
 	win32-g++ {
