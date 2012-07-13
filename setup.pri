@@ -9,9 +9,11 @@ win32 {
 			EXCEPTION_LIBS += -lbfd -liberty
 		}
 		POST_TARGETDEPS += $$BUILD_DIR/libexception.a
+		EXCEPTION_TEST_LIBS = -lexception_tests
 	} else {
 		EXCEPTION_LIBS += exception.lib imagehlp.lib
 		POST_TARGETDEPS += $$BUILD_DIR/libexception.lib
+		EXCEPTION_TEST_LIBS = exception_tests.lib
 	}
 }
 
@@ -23,4 +25,7 @@ unix {
 	}
 
 	POST_TARGETDEPS += $$BUILD_DIR/libexception.a
+	EXCEPTION_TEST_LIBS = -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
 }
+
+EXCEPTION_TEST_LIBS += $$EXCEPTION_LIBS
