@@ -9,7 +9,7 @@ win32 {
 			EXCEPTION_LIBS += -lbfd -liberty
 		}
 		POST_TARGETDEPS += $$BUILD_DIR/libexception.a
-		EXCEPTION_TEST_LIBS = -lexception_tests
+		EXCEPTION_TEST_LIBS = -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
 	} else {
 		EXCEPTION_LIBS += exception.lib imagehlp.lib
 		POST_TARGETDEPS += $$BUILD_DIR/libexception.lib
