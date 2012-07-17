@@ -4,28 +4,35 @@ INCLUDEPATH += $$PWD/project/src
 
 win32 {
 	win32-g++ {
-		EXCEPTION_LIBS += -lexception -limagehlp
-		bfd {
-			EXCEPTION_LIBS += -lbfd -liberty
+		unit_tests {
+		    LIBS += -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
+		    EXE_DEPS += $$BUILD_DIR/libexception_tests.a
 		}
-		POST_TARGETDEPS += $$BUILD_DIR/libexception.a
-		EXCEPTION_TEST_LIBS = -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
+		LIBS += -lexception -limagehlp
+		bfd {
+			LIBS += -lbfd -liberty
+		}
+		EXE_DEPS += $$BUILD_DIR/libexception.a
 	} else {
-		EXCEPTION_LIBS += exception.lib imagehlp.lib
-		POST_TARGETDEPS += $$BUILD_DIR/libexception.lib
-		EXCEPTION_TEST_LIBS = exception_tests.lib
+		unit_tests {
+		    LIBS += exception_tests.lib
+		    EXE_DEPS += $$BUILD_DIR/exception_tests.lib
+		}
+		LIBS += exception.lib imagehlp.lib
+		EXE_DEPS += $$BUILD_DIR/exception.lib
 	}
 }
 
 
 unix {
-	EXCEPTION_LIBS += -lexception
+	unit_tests {	
+    	    EXE_DEPS += $$BUILD_DIR/libexception_tests.a
+	    LIBS += -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
+	}
+	LIBS += -lexception
 	bfd {
-		EXCEPTION_LIBS += -lbfd -ldl -lz -liberty
+		LIBS += -lbfd -ldl -lz -liberty
 	}
 
-	POST_TARGETDEPS += $$BUILD_DIR/libexception.a
-	EXCEPTION_TEST_LIBS = -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
+	EXE_DEPS += $$BUILD_DIR/libexception.a
 }
-
-EXCEPTION_TEST_LIBS += $$EXCEPTION_LIBS

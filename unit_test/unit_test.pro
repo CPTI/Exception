@@ -4,7 +4,7 @@
 #
 
 include(../../config.pri)
-include(../../setup.pri)
+include(../../test_lib/setup.pri)
 
 TARGET = exception_tests
 TEMPLATE = lib
