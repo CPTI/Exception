@@ -37,16 +37,16 @@
  * used as base classes for more detailed exceptions. It is important
  * to remember that all exceptions should be caught by reference to
  * avoid slicing:
- * 
+ *
  * try {
  *     throw SomeException();
  * } catch (const Exception& ex) {
  *     // do something
  * }
- * 
+ *
  * This class hierarchy also defines a stacktrace facility to make the
  * localization of errors easier.
- * 
+ *
  */
 
 
@@ -357,7 +357,7 @@ namespace ExceptionLib {
     * #ifndef DEBUG
     *     exception::Exception::stacktraceEnabled(false);
     * #endif
-    * 
+    *
     * with a stack depth of 10, the treatment of exceptions is about 25% faster
     * if you disable stacktraces
     */
