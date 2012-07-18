@@ -79,6 +79,11 @@ namespace ExceptionLib {
 				}
 			}
 		} else {
+			Backtrace::StackFrame* addr = reinterpret_cast<Backtrace::StackFrame*>(localFrames.buffer);
+			if (localFrames.frms != addr) {
+				if (depth) *depth = 0;
+				return NULL;
+			}
 			if (depth) *depth = localFrames.size - INTERCEPT_SKIP;
 			if (*depth > 0) {
 
@@ -314,9 +319,6 @@ namespace ExceptionLib {
 				} else {
 					frames.resize(0);
 				}
-
-
-
 			}
 		}
 	}

@@ -38,7 +38,7 @@ void MyExceptionTest::testThrowStdExcept()
 		QFAIL("expected exception throw");
 	} catch(const std::exception& ex) {
 		size_t depth = 0;
-		const Backtrace::StackFrame* frames = ExceptionLib::getBT(ex, &depth, false);
+		const Backtrace::StackFrame* frames = ExceptionLib::getBT(ex, &depth, true);
 
 		QCOMPARE(ex.what(), "lalala");
 
@@ -71,7 +71,7 @@ void MyExceptionTest::testThrowExcept()
 		QCOMPARE(ex.what(), "lalala");
 		/* caso generico */ {
 			size_t depth = 0;
-			const Backtrace::StackFrame* frames = ExceptionLib::getBT(ex, &depth, false);
+			const Backtrace::StackFrame* frames = ExceptionLib::getBT(ex, &depth, true);
 
 
 			if (depth < 2) {
