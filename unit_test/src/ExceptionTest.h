@@ -17,7 +17,9 @@ public:
 	virtual ~MyExceptionTest() {}
 
 private slots:
-	void testThrow();
+	void testThrowStdExcept();
+	void testThrowExcept();
+
 };
 
 

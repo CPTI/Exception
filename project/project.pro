@@ -35,6 +35,7 @@ SOURCES += \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
         $$SRC/Demangling.cpp \
+        $$SRC/BackTracePlatIndep.cpp \
 
 
 win32 {
@@ -105,6 +106,7 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
 
 
 

@@ -8,7 +8,7 @@ win32 {
 		    LIBS += -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
 		    EXE_DEPS += $$BUILD_DIR/libexception_tests.a
 		}
-		LIBS += -lexception -limagehlp
+                LIBS += -lexception -limagehlp -Wl,--wrap,__cxa_throw
 		bfd {
 			LIBS += -lbfd -liberty
 		}
@@ -25,11 +25,11 @@ win32 {
 
 
 unix {
-	unit_tests {	
-    	    EXE_DEPS += $$BUILD_DIR/libexception_tests.a
+        unit_tests {
+            EXE_DEPS += $$BUILD_DIR/libexception_tests.a
 	    LIBS += -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
-	}
-	LIBS += -lexception
+        }
+        LIBS += -lexception -Wl,--wrap,__cxa_throw
 	bfd {
 		LIBS += -lbfd -ldl -lz -liberty
 	}
