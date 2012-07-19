@@ -23,19 +23,21 @@ INCLUDEPATH += \
 
 HEADERS += \
 	$$SRC/BackTrace.h \
-        $$SRC/Error.h \
-        $$SRC/Exception.h \
-        $$SRC/StackAddressLoader.h \
-        $$SRC/Software.h \
         $$SRC/DebugSymbolLoader.h \
         $$SRC/Demangling.h \
+        $$SRC/Error.h \
+        $$SRC/Exception.h \
+        $$SRC/Logger.h \
+        $$SRC/Software.h \
+        $$SRC/StackAddressLoader.h \
 
 
 SOURCES += \
+        $$SRC/BackTracePlatIndep.cpp \
+        $$SRC/Demangling.cpp \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
-        $$SRC/Demangling.cpp \
-        $$SRC/BackTracePlatIndep.cpp \
+        $$SRC/Logger.cpp \
 
 
 win32 {
