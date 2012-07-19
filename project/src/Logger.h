@@ -67,27 +67,27 @@ namespace Log {
 	class LoggerFactory {
 	public:
 
+		typedef QSharedPointer<Logger> LoggerPtr;
+		typedef QMap<QString, LoggerPtr> LoggerMap;
+		typedef QSharedPointer<Output> OutputPtr;
+
 		static Logger& getLogger(const QString& name);
 
-		static void changeDefaultOutput(const QSharedPointer<Output>& o);
+		static void changeDefaultOutput(const OutputPtr& o);
 
-		static QSharedPointer<Output> defaultOutput();
+		static OutputPtr defaultOutput();
 
 		static void changeDefaultLevel(Level l);
 
 		static Level defaultLevel();
 
-	private:
+		static LoggerMap& loggers();
 
-		typedef QSharedPointer<Logger> LoggerPtr;
-		typedef QSharedPointer<Output> OutputPtr;
-		typedef QMap<QString, LoggerPtr> LoggerMap;
+	private:
 
 		static OutputPtr& defaultOutputPriv();
 
 		static Level& defaultLevelPriv();
-
-		static LoggerMap& loggers();
 	};
 
 	class Logger
@@ -148,6 +148,41 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
 			if (m_level >= l) {
 				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5));
+			}
+		}
+
+		template <class T1, class T2, class T3, class T4, class T5, class T6>
+		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
+			if (m_level >= l) {
+				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6));
+			}
+		}
+
+		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
+			if (m_level >= l) {
+				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7));
+			}
+		}
+
+		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
+		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8) {
+			if (m_level >= l) {
+				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8));
+			}
+		}
+
+		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
+		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9) {
+			if (m_level >= l) {
+				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8).arg(t9));
+			}
+		}
+
+		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
+		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10) {
+			if (m_level >= l) {
+				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8).arg(t9).arg(t10));
 			}
 		}
 
