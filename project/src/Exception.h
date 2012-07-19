@@ -52,7 +52,7 @@
 
 namespace Backtrace {
 	class StackTrace;
-	class StackFrame;
+	struct StackFrame;
 }
 
 namespace ExceptionLib {
