@@ -25,7 +25,7 @@ DEPENDPATH += $$INCLUDEPATH
 
 ################################################################################
 #
-# Includes 
+# Includes
 #
 HEADERS += \
         $$SRC/BacktraceTest.h \
