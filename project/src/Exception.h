@@ -23,6 +23,12 @@
 	typedef std::exception BaseExceptionType;
 #endif
 
+#ifdef __GNUC__
+#define NOINLINE __attribute__(( noinline ))
+#else
+#define NOINLINE
+#endif
+
 
 /* This file defines a hierachy of Exception classes that is meant to
  * unify the definition and treatment of exceptions. All exceptions
@@ -31,21 +37,22 @@
  * used as base classes for more detailed exceptions. It is important
  * to remember that all exceptions should be caught by reference to
  * avoid slicing:
- * 
+ *
  * try {
  *     throw SomeException();
  * } catch (const Exception& ex) {
  *     // do something
  * }
- * 
+ *
  * This class hierarchy also defines a stacktrace facility to make the
  * localization of errors easier.
- * 
+ *
  */
 
 
 namespace Backtrace {
 	class StackTrace;
+	class StackFrame;
 }
 
 namespace ExceptionLib {
@@ -94,7 +101,7 @@ namespace ExceptionLib {
 
 		// Esse construtor é template para evitar o trabalho do programador
 		template <class Ex>
-		explicit ExceptionBase(
+		explicit NOINLINE ExceptionBase(
 				Ex*,
 				bool enableTrace,
 				const std::string& what = "",
@@ -146,7 +153,7 @@ namespace ExceptionLib {
 		std::string m_what;
 		ExceptionBase* m_nested;
 
-		void setup(bool enableTrace, const ExceptionBase* nested);
+		void NOINLINE setup(bool enableTrace, const ExceptionBase* nested);
 	};
 
 
@@ -344,14 +351,13 @@ namespace ExceptionLib {
       virtual ~FloatingPointException() throw () {}
   };
 
-
   /* The construction of stacktraces might be expensive and useless because
     * you may not be able to see anything except binary addresses depending on
     * your compilation flags. In this case, you can do something like this:
     * #ifndef DEBUG
     *     exception::Exception::stacktraceEnabled(false);
     * #endif
-    * 
+    *
     * with a stack depth of 10, the treatment of exceptions is about 25% faster
     * if you disable stacktraces
     */
@@ -362,6 +368,9 @@ namespace ExceptionLib {
    * be overwritten.
    */
   void init(char *argv0);
+
+  /* Get the backtrace for the current exception. This method can only be called inside a catch block. */
+  const Backtrace::StackFrame* getBT(const std::exception& ex, size_t* depth, bool loadDebugSyms = false);
 }
 
 inline std::ostream& operator<< (std::ostream& o, const ExceptionLib::Exception& e)

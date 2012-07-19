@@ -24,36 +24,26 @@ namespace Backtrace {
 	class StackTrace {
 	public:
 
-		StackTrace() : m_referenceCount(1) {}
+		StackTrace() : m_debugSmbolsLoaded(false), m_referenceCount(1) {}
 
 		~StackTrace() {}
 
-		std::string asString() const {
-			std::stringstream ss;
-			for (size_t i = 0; i < m_frames.size(); ++i) {
-				ss << m_frames[i].addr << ":  " << m_frames[i].function << " in (" << m_frames[i].imageFile << ")";
-				if (m_frames[i].line >= 0) {
-					ss << " at " << m_frames[i].sourceFile << ": " << m_frames[i].line;
-				}
-				ss << "\n";
-			}
-			return ss.str();
-		}
+		std::string asString(bool loadDebug = false);
+
+		static std::string asString(int depth, const StackFrame* frames);
+
+		bool isDebugLoaded() { return m_debugSmbolsLoaded; }
+
+		void loadDebug();
 
 		std::vector<StackFrame>& getFrames() { return m_frames; }
 
-		void increaseCount() {
-			++m_referenceCount;
-		}
+		void increaseCount();
 
-		void decreaseCount() {
-			--m_referenceCount;
-			if (m_referenceCount <= 0) {
-				delete this; // o destrutor é virtual
-			}
-		}
+		void decreaseCount();
 
 	private:
+		bool m_debugSmbolsLoaded;
 		int m_referenceCount;
 		std::vector<StackFrame> m_frames;
 	};

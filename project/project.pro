@@ -33,6 +33,7 @@ HEADERS += \
 
 
 SOURCES += \
+        $$SRC/BackTracePlatIndep.cpp \
         $$SRC/Demangling.cpp \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
@@ -107,6 +108,7 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
 
 
 

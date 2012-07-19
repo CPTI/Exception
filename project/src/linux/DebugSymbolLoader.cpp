@@ -181,7 +181,7 @@ namespace Backtrace {
 
 
 	IDebugSymbolLoader& getPlatformDebugSymbolLoader()
-	{		
+	{
 		static Addr2LineSymbolLoader instance;
 		return instance;
 	}

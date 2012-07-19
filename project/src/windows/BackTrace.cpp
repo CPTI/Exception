@@ -16,7 +16,6 @@ namespace Backtrace {
 		trace->getFrames().resize(MAX_STACK);
 		const int num = getPlatformStackLoader().getStack(MAX_STACK, &trace->getFrames()[0]);
 		trace->getFrames().resize(num);
-		getPlatformDebugSymbolLoader().findDebugInfo(&trace->getFrames()[0], num);
 
 		return trace.release();
 	}
