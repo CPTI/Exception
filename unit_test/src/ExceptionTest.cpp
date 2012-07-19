@@ -26,7 +26,7 @@ MyExceptionTest::MyExceptionTest()
 }
 
 
-void do_throw_1()
+void NOINLINE do_throw_1()
 {
 	throw std::logic_error("lalala");
 }
@@ -49,7 +49,7 @@ void MyExceptionTest::testThrowStdExcept()
 		if (depth > 0) {
 			QCOMPARE(frames[0].function, "do_throw_1()");
 		}
-		if (depth > 1) {
+        if (depth > 1 && !frames[1].function.empty()) {
 			QCOMPARE(frames[1].function, "MyExceptionTest::testThrowStdExcept()");
 		}
 	} catch(...) {
@@ -57,7 +57,7 @@ void MyExceptionTest::testThrowStdExcept()
 	}
 }
 
-void do_throw_2()
+void NOINLINE do_throw_2()
 {
 	throw ExceptionLib::IOException("lalala");
 }
@@ -81,7 +81,7 @@ void MyExceptionTest::testThrowExcept()
 			if (depth > 0) {
 				QCOMPARE(frames[0].function, "do_throw_2()");
 			}
-			if (depth > 1) {
+            if (depth > 1 && !frames[1].function.empty()) {
 				QCOMPARE(frames[1].function, "MyExceptionTest::testThrowExcept()");
 			}
 		}
@@ -97,7 +97,7 @@ void MyExceptionTest::testThrowExcept()
 			if (frames.size() > 0) {
 				QCOMPARE(frames[0].function, "do_throw_2()");
 			}
-			if (frames.size() > 1) {
+            if (frames.size() > 1 && !frames[1].function.empty()) {
 				QCOMPARE(frames[1].function, "MyExceptionTest::testThrowExcept()");
 			}
 		}
