@@ -369,6 +369,7 @@ namespace ExceptionLib {
    */
   void init(char *argv0);
 
+  /* Get the backtrace for the current exception. This method can only be called inside a catch block. */
   const Backtrace::StackFrame* getBT(const std::exception& ex, size_t* depth, bool loadDebugSyms = false);
 }
 

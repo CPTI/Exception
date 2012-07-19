@@ -38,15 +38,17 @@ static const int MAX_FRAMES = 16;
 static const int INTERCEPT_SKIP = 1;
 
 struct frames {
+	typedef void (*destructor)(void*);
 	int size;
 	Backtrace::StackFrame* frms;
+	destructor dtor;
 	union {
 		char buffer[sizeof(Backtrace::StackFrame)*MAX_FRAMES];
 		padding p;
 	};
 };
 
-static __thread frames localFrames = { 0 , 0, {{0}}};
+static __thread frames localFrames = { 0 , 0, 0, {{0}}};
 
 namespace {
 	void create_frames()
@@ -60,6 +62,20 @@ namespace {
 				new(addr + i) Backtrace::StackFrame();
 			}
 		}
+	}
+
+	void destroy_frames(void *thrown_exception)
+	{
+		Backtrace::StackFrame* addr = reinterpret_cast<Backtrace::StackFrame*>(localFrames.buffer);
+		if (localFrames.frms == addr) {
+			for (int i = 0; i < MAX_FRAMES;  ++i) {
+				addr[i].~StackFrame();
+			}
+			localFrames.dtor(thrown_exception);
+		}
+		localFrames.size = -1;
+		localFrames.frms = NULL;
+		localFrames.dtor = NULL;
 	}
 }
 
@@ -172,6 +188,9 @@ extern "C" void __wrap___cxa_throw( void* thrown_exception,
 		if ( find_base(cinfo, &stdexclass, NULL)) {
 			create_frames();
 			localFrames.size = Backtrace::getPlatformStackLoader().getStack(MAX_FRAMES, localFrames.frms);
+			localFrames.dtor = dest;
+			__real___cxa_throw( thrown_exception, tinfo, destroy_frames );
+			return;
 		}
 	}
 	__real___cxa_throw( thrown_exception, tinfo, dest );
