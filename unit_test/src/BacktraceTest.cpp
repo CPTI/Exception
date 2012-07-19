@@ -104,13 +104,15 @@ void BacktraceTest::testBacktraceDebugInfo()
 		"level2(int*, Backtrace::StackFrame*, void**)",
 		"level1(int*, Backtrace::StackFrame*, void**)"
 	};
-//	int lines[][2] = {
-//		{20,24},
-//		{26,30},
-//		{32,36},
-//		{39,42},
-//		{44,48}
-//	};
+#ifdef DEBUG
+	int lines[][2] = {
+		{20,24},
+		{26,30},
+		{32,36},
+		{39,42},
+		{44,48}
+	};
+#endif
 	int eff = 0;
 
 	level1(&eff, middle, end);
