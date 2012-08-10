@@ -3,10 +3,11 @@
 #   Configurações do projeto
 #
 
+TARGET = exception_tests
+
 include(../../config.pri)
 include(../../test_lib/setup.pri)
 
-TARGET = exception_tests
 TEMPLATE = lib
 
 CONFIG += qtestlib static
