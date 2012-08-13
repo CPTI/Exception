@@ -1,6 +1,12 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+
+#include "Exception.h"
+#include "BackTrace.h"
+#include <exception>
+#include <string>
+
 #include <QMap>
 #include <QSharedPointer>
 
@@ -16,6 +22,22 @@ namespace Log {
 		LDEBUG1,
 		LDEBUG2
 	};
+
+	enum ExceptOpts {
+		LOG_WHAT = 0,
+		LOG_ST,
+		LOG_ST_DBG
+	};
+
+	class Logger;
+}
+
+namespace LogImpl {
+
+
+}
+
+namespace Log {
 
 	class Output {
 	public:
@@ -61,7 +83,6 @@ namespace Log {
 	};
 
 
-
 	class Logger;
 
 	class LoggerFactory {
@@ -83,15 +104,23 @@ namespace Log {
 
 		static LoggerMap& loggers();
 
+		static void changeDefaultExceptionLog(ExceptOpts opt);
+
+		static ExceptOpts defaultExceptionLog();
+
 	private:
 
 		static OutputPtr& defaultOutputPriv();
 
 		static Level& defaultLevelPriv();
+
+		static ExceptOpts& defaultExceptionLogPriv();
 	};
 
 	class Logger
 	{
+	private:
+
 	public:
 
 		const QString& getName() { return m_name; }
@@ -104,15 +133,13 @@ namespace Log {
 
 		void changeOutput(QSharedPointer<Output> o) { m_output = o; }
 
+		ExceptOpts getExceptionOpts() const { return m_exOpts; }
+
+		void changeExceptionOpts(ExceptOpts o) { m_exOpts = o; }
+
 		void log(Level l, const QString& str) { // esse overload é o mais lento se a sua mensagem não vai para a saída
 			if (m_level >= l) {
 				output(l, str);
-			}
-		}
-
-		inline void log(Level l, const char* fmt) {
-			if (m_level >= l) {
-				output(l, fmt);
 			}
 		}
 
@@ -190,7 +217,7 @@ namespace Log {
 		Logger(const Logger&);
 		Logger& operator=(const Logger&);
 
-		Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel);
+		Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts);
 
 		QString m_name;
 
@@ -198,10 +225,14 @@ namespace Log {
 
 		Level m_level;
 
+		ExceptOpts m_exOpts;
+
 		friend class LoggerFactory;
 
 		void output(Level level, const QString& str);
 	};
 }
+
+
 
 #endif // LOGGER_H

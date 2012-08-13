@@ -1,6 +1,7 @@
 #include "Logger.h"
 
 #include "Exception.h"
+#include "BackTrace.h"
 
 #include <QSharedPointer>
 
@@ -89,7 +90,7 @@ namespace Log {
 		if (loggers().contains(name)) {
 			return *loggers()[name].data();
 		} else {
-			LoggerPtr ptr(new Logger(name, defaultOutput(), defaultLevel()));
+			LoggerPtr ptr(new Logger(name, defaultOutput(), defaultLevel(), defaultExceptionLog()));
 			loggers().insert(name, ptr);
 			return *ptr.data();
 		}
@@ -137,13 +138,34 @@ namespace Log {
 		return map;
 	}
 
-	Logger::Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel)
+	void LoggerFactory::changeDefaultExceptionLog(ExceptOpts opt)
+	{
+		defaultExceptionLogPriv() = opt;
+	}
+
+	ExceptOpts LoggerFactory::defaultExceptionLog()
+	{
+		return defaultExceptionLogPriv();
+	}
+
+	ExceptOpts& LoggerFactory::defaultExceptionLogPriv()
+	{
+		static ExceptOpts opts = LOG_ST;
+		return opts;
+	}
+
+	Logger::Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts exOpts)
 		: m_name(name)
 		, m_output(defaultOutput)
 		, m_level(defaultLevel)
+		, m_exOpts(exOpts)
 	{}
 
 	void Logger::output(Level level, const QString& str) {
 		m_output->write(level, QString("Log: %1 - %2: %3\n").arg(levelNames[level]).arg(m_name).arg(str));
 	}
+}
+
+namespace LogImpl {
+
 }
