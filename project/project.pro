@@ -1,10 +1,12 @@
 
+
+TARGET = exception
+
 # inclui o config.pri se existir
 !include(../../config.pri) {
     message("A inclusao do arquivo config.pri eh opcional")
 }
 
-TARGET = exception
 
 OTHER_FILES += setup.pri
 
