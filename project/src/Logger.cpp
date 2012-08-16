@@ -150,7 +150,7 @@ namespace Log {
 
 	ExceptOpts& LoggerFactory::defaultExceptionLogPriv()
 	{
-		static ExceptOpts opts = LOG_ST;
+		static ExceptOpts opts = LOG_ST_DBG;
 		return opts;
 	}
 
