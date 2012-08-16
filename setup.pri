@@ -1,5 +1,6 @@
 # exportacao e configuracoes de build
 
+include($${PWD}/../type_utils/setup.pri)
 INCLUDEPATH += $$PWD/project/src
 
 win32 {

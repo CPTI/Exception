@@ -6,6 +6,7 @@
 TARGET = exception_tests
 
 include(../../config.pri)
+include(../../type_utils/setup.pri)
 include(../../test_lib/setup.pri)
 
 TEMPLATE = lib

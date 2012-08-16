@@ -168,4 +168,16 @@ namespace Log {
 
 namespace LogImpl {
 
+	Formatter<std::exception>::ret_type Formatter<std::exception>::format(const std::exception& t, const Log::Logger* l) {
+		using namespace Backtrace;
+		if (l->getExceptionOpts() >= Log::LOG_ST) {
+			size_t depth = 0;
+			const StackFrame* frames = ExceptionLib::getBT(t, &depth, (l->getExceptionOpts() >= Log::LOG_ST_DBG));
+			return QString("%1:\n%2").arg(t.what()).arg(Backtrace::StackTrace::asString(depth, frames).c_str());
+		} else {
+			return QString("%1").arg(t.what());
+		}
+	}
+
+
 }

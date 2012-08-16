@@ -4,6 +4,7 @@
 
 #include "Exception.h"
 #include "BackTrace.h"
+#include "TypeManip.h"
 #include <exception>
 #include <string>
 
@@ -34,8 +35,42 @@ namespace Log {
 
 namespace LogImpl {
 
+	template<class T>
+	struct Formatter {
+		typedef const T& ret_type;
+		static ret_type format(const T& t, const Log::Logger*) { return t; }
+	};
+
+	template<>
+	struct Formatter<std::string> {
+		typedef const char* ret_type;
+		static ret_type format(const std::string& t, const Log::Logger*) { return t.c_str(); }
+	};
+
+	template<>
+	struct Formatter<std::exception> {
+		typedef QString ret_type;
+		static ret_type format(const std::exception& t, const Log::Logger* l);
+	};
+
+
+	template<class T>
+	struct F {
+
+		typedef typename Loki::Select<
+			INSTANCE_OF(T, std::exception),
+			Formatter<std::exception>,
+			Formatter<T>
+		>::Result Frmttr;
+
+		static typename Frmttr::ret_type doIt(const T& t, const Log::Logger* l) {
+			return Frmttr::format(t, l);
+		}
+
+	};
 
 }
+
 
 namespace Log {
 
@@ -145,71 +180,81 @@ namespace Log {
 
 		template <class T1>
 		void log(Level l, const char* fmt, const T1& t1) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)));
 			}
 		}
 
 		template <class T1, class T2>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8).arg(t9));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)));
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(t1).arg(t2).arg(t3).arg(t4).arg(t5).arg(t6).arg(t7).arg(t8).arg(t9).arg(t10));
+				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).arg(F<T10>::doIt(t10, this)));
 			}
 		}
 
