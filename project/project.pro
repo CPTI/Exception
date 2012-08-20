@@ -1,12 +1,7 @@
-
-
 TARGET = exception
 
+include(../../pri/setup.pri)
 include(../../type_utils/setup.pri)
-# inclui o config.pri se existir
-!include(../../config.pri) {
-    message("A inclusao do arquivo config.pri eh opcional")
-}
 
 
 
