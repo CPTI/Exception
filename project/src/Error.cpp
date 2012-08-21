@@ -324,7 +324,7 @@ QString getStackTrace()
 {
 	Backtrace::StackTrace* trace = Backtrace::trace();
 
-	QString ret = trace->asString().c_str();
+	QString ret = trace->asString(true).c_str();
 	delete trace;
 
 	return ret;
