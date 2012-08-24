@@ -5,10 +5,13 @@
 #include "Exception.h"
 #include "BackTrace.h"
 #include "TypeManip.h"
+#include "VectorIO.h"
 #include <exception>
 #include <string>
+#include <string.h>
 
 #include <QMap>
+#include <QFile>
 #include <QSharedPointer>
 
 #include <cstdio>
@@ -78,7 +81,7 @@ namespace Log {
 	public:
 		virtual ~Output() {}
 		// O unico requisito de write é que deve ser atomico
-		virtual void write(Level level, const QString& str) = 0;
+		virtual void write(Level level, VectorIO::out_elem* data, int len) = 0;
 	};
 
 	// Segundo o posix as operações de stream são sempre atômicas: http://www.gnu.org/software/libc/manual/html_node/Streams-and-Threads.html;
@@ -86,19 +89,19 @@ namespace Log {
 	public:
 		StreamOutput(::std::FILE*  out);
 
-		void write(Level level, const QString& str);
+		void write(Level level, VectorIO::out_elem* data, int len);
 
 		static QSharedPointer<StreamOutput> StdErr();
 		static QSharedPointer<StreamOutput> StdOut();
 	private:
-		::std::FILE* m_file;
+		QFile m_file;
 	};
 
 	class ColoredStreamOutput : public Output {
 	public:
 		ColoredStreamOutput(::std::FILE*  out);
 
-		void write(Level level, const QString& str);
+		void write(Level level, VectorIO::out_elem* data, int len);
 
 		static QSharedPointer<ColoredStreamOutput> StdErr();
 		static QSharedPointer<ColoredStreamOutput> StdOut();
@@ -114,7 +117,7 @@ namespace Log {
 		static const char * attrs[];
 
 	private:
-		::std::FILE* m_file;
+		QFile m_file;
 	};
 
 
@@ -158,7 +161,7 @@ namespace Log {
 
 	public:
 
-		const QString& getName() { return m_name; }
+		QString getName() { return QString(m_name); }
 
 		Level getLevel() const { return m_level; }
 
@@ -175,7 +178,7 @@ namespace Log {
 		void log(Level l, const char* fmt) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt));
+				output(l, fmt, strlen(fmt));
 			}
 		}
 
@@ -183,7 +186,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -191,7 +195,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -199,7 +204,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -207,7 +213,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -215,7 +222,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -223,7 +231,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -231,7 +240,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -239,7 +249,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -247,7 +258,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -255,7 +267,8 @@ namespace Log {
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10) {
 			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).arg(F<T10>::doIt(t10, this)));
+				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).arg(F<T10>::doIt(t10, this)).toUtf8();
+				output(l, utf8Data.constBegin(), utf8Data.size());
 			}
 		}
 
@@ -265,7 +278,7 @@ namespace Log {
 
 		Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts);
 
-		QString m_name;
+		QByteArray m_name;
 
 		QSharedPointer<Output> m_output;
 
@@ -275,7 +288,7 @@ namespace Log {
 
 		friend class LoggerFactory;
 
-		void output(Level level, const QString& str);
+		void output(Level level, const char* str, int len);
 	};
 }
 

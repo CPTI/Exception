@@ -30,6 +30,7 @@ HEADERS += \
         $$SRC/Software.h \
         $$SRC/StackAddressLoader.h \
         $$SRC/svector.h \
+        $$SRC/VectorIO.h \
 
 
 SOURCES += \
@@ -38,6 +39,7 @@ SOURCES += \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
         $$SRC/Logger.cpp \
+        $$SRC/VectorIO.cpp \
 
 
 win32 {

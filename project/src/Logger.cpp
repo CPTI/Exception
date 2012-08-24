@@ -4,7 +4,8 @@
 #include "BackTrace.h"
 
 #include <QSharedPointer>
-
+#include <VectorIO.h>
+#include <vector>
 
 static const char* levelNames[] = {
 	"ERROR ",
@@ -23,16 +24,15 @@ namespace Log {
 	using namespace std;
 	using namespace ExceptionLib;
 
-	StreamOutput::StreamOutput(::std::FILE*  out) : m_file(out) {
+	StreamOutput::StreamOutput(::std::FILE*  out) : m_file() {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
 		}
+		m_file.open(out, QIODevice::WriteOnly);
 	}
 
-	void StreamOutput::write(Level, const QString& str) {
-		// Utf-8 não é null terminated
-		QByteArray bytes = str.toUtf8();
-		::std::fwrite(bytes.data(), sizeof(char), bytes.size(), m_file);
+	void StreamOutput::write(Level, VectorIO::out_elem* data, int len) {
+		VectorIO::write_vec(&m_file, data, len);
 	}
 
 	QSharedPointer<StreamOutput> StreamOutput::StdErr() {
@@ -43,18 +43,19 @@ namespace Log {
 		return QSharedPointer<StreamOutput>(new StreamOutput(stdout));
 	}
 
-	ColoredStreamOutput::ColoredStreamOutput(::std::FILE*  out) : m_file(out) {
+	ColoredStreamOutput::ColoredStreamOutput(::std::FILE*  out) : m_file() {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
 		}
+		m_file.open(out, QIODevice::WriteOnly);
 	}
 
-	const char * ColoredStreamOutput::error_attr = "0;31";
-	const char * ColoredStreamOutput::warn_attr = "0;33";
-	const char * ColoredStreamOutput::info_attr =  "1;37";
-	const char * ColoredStreamOutput::debug0_attr = "0;34";
-	const char * ColoredStreamOutput::debug1_attr = "1;34";
-	const char * ColoredStreamOutput::debug2_attr = "0;37";
+	const char * ColoredStreamOutput::error_attr = "\x1b[0;31m";
+	const char * ColoredStreamOutput::warn_attr = "\x1b[0;33m";
+	const char * ColoredStreamOutput::info_attr =  "\x1b[1;37m";
+	const char * ColoredStreamOutput::debug0_attr = "\x1b[0;34m";
+	const char * ColoredStreamOutput::debug1_attr = "\x1b[1;34m";
+	const char * ColoredStreamOutput::debug2_attr = "\x1b[0;37m";
 	const char * ColoredStreamOutput::reset = "\x1b[0m";
 
 	const char * ColoredStreamOutput::attrs[] = {
@@ -66,15 +67,24 @@ namespace Log {
 		debug2_attr
 	};
 
-	void ColoredStreamOutput::write(Level level, const QString& str) {
-		// Utf-8 não é null terminated
+	void ColoredStreamOutput::write(Level level, VectorIO::out_elem* data, int len) {
 
-		QByteArray bytes("\x1b[");
-		bytes.append(attrs[level]).append("m");
-		bytes.append(str.toUtf8());
-		bytes.append(reset);
+		VectorIO::out_elem prologue = {
+			reinterpret_cast<const void*>(attrs[level]),
+			strlen(attrs[level])
+		};
 
-		::std::fwrite(bytes.data(), sizeof(char), bytes.size(), m_file);
+		VectorIO::out_elem epilogue = {
+			reinterpret_cast<const void*>(reset), strlen(reset)
+		};
+
+		std::vector<VectorIO::out_elem> out;
+		out.reserve(10);
+		out.push_back(prologue);
+		out.insert(out.end(), data, data+len);
+		out.push_back(epilogue);
+
+		VectorIO::write_vec(&m_file, &out[0], out.size());
 	}
 
 	QSharedPointer<ColoredStreamOutput> ColoredStreamOutput::StdErr() {
@@ -155,14 +165,26 @@ namespace Log {
 	}
 
 	Logger::Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts exOpts)
-		: m_name(name)
+		: m_name(name.toUtf8())
 		, m_output(defaultOutput)
 		, m_level(defaultLevel)
 		, m_exOpts(exOpts)
 	{}
 
-	void Logger::output(Level level, const QString& str) {
-		m_output->write(level, QString("Log: %1 - %2: %3\n").arg(levelNames[level]).arg(m_name).arg(str));
+	void Logger::output(Level level, const char* str, int len) {
+
+		VectorIO::out_elem vec[] = {
+			{ "Log: ", strlen("Log: ") },
+			{ levelNames[level], strlen(levelNames[level]) },
+			{ " - ", strlen(" - ") },
+			{ m_name.constData(), m_name.size() },
+			{ ": ", strlen(": ") },
+			{ str, len },
+			{ "\n", strlen("\n") },
+		};
+
+
+		m_output->write(level, vec, 7);
 	}
 }
 
