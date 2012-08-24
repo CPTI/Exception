@@ -172,9 +172,10 @@ namespace Log {
 
 		void changeExceptionOpts(ExceptOpts o) { m_exOpts = o; }
 
-		void log(Level l, const QString& str) { // esse overload é o mais lento se a sua mensagem não vai para a saída
+		void log(Level l, const char* fmt) {
+			using namespace LogImpl;
 			if (m_level >= l) {
-				output(l, str);
+				output(l, QString(fmt));
 			}
 		}
 
