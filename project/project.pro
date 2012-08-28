@@ -1,24 +1,19 @@
 TARGET = exception
 
-include(../../pri/setup.pri)
-include(../../type_utils/setup.pri)
-
-
+!include(../../pri/setup.pri) { error("Erro incluindo o subrepo pri -- $$TARGET") }
+!include(../../type_utils/setup.pri) { subrepoErrorMessage(type_utils) }
 
 OTHER_FILES += setup.pri
-
 
 TEMPLATE = lib
 CONFIG += static
 
 CONFIG += exception rtti
 
-
 SRC  = ./src
 
 INCLUDEPATH += \
         $$SRC \
-
 
 HEADERS += \
 	$$SRC/BackTrace.h \
@@ -32,7 +27,6 @@ HEADERS += \
         $$SRC/svector.h \
         $$SRC/VectorIO.h \
 
-
 SOURCES += \
         $$SRC/BackTracePlatIndep.cpp \
         $$SRC/Demangling.cpp \
@@ -40,7 +34,6 @@ SOURCES += \
         $$SRC/Exception.cpp \
         $$SRC/Logger.cpp \
         $$SRC/VectorIO.cpp \
-
 
 win32 {
 	DEFINES -= UNICODE
@@ -110,13 +103,4 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
-
-
-
-
-
-
-
-
-
 

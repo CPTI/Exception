@@ -1,6 +1,6 @@
 # exportacao e configuracoes de build
 
-include($${PWD}/../type_utils/setup.pri)
+!include($${PWD}/../type_utils/setup.pri) { errorMessage("Erro incluindo o subrepo type_utils") }
 INCLUDEPATH += $$PWD/project/src
 
 win32 {
