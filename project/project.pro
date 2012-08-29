@@ -1,11 +1,12 @@
 TARGET = exception
 
-include(../../pri/setup.pri)
-include(../../type_utils/setup.pri)
+!include(../setup.pri) { includeErrorMessage(../setup.pri) }
+!include(../../pri/setup.pri) { error("Erro incluindo o subrepo pri -- $$TARGET") }
 
-
-
-OTHER_FILES += setup.pri
+!include(../../unpackers/setup.pri) { subrepoErrorMessage(unpackers) }
+!include(../../exception/setup.pri) { subrepoErrorMessage(exception) }
+!include(../../type_utils/setup.pri) { subrepoErrorMessage(type_utils) }
+!include(../../util/setup.pri) { subrepoErrorMessage(util) }
 
 
 TEMPLATE = lib
@@ -15,9 +16,6 @@ CONFIG += exception rtti
 
 
 SRC  = ./src
-
-INCLUDEPATH += \
-        $$SRC \
 
 
 HEADERS += \
