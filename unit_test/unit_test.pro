@@ -5,9 +5,9 @@
 
 TARGET = exception_tests
 
-include(../../pri/setup.pri)
-include(../../type_utils/setup.pri)
-include(../../test_lib/setup.pri)
+!include(../../pri/setup.pri) { error("Erro incluindo o subrepo pri -- $$TARGET") }
+!include(../../type_utils/setup.pri) { subrepoErrorMessage(type_utils) }
+!include(../../test_lib/setup.pri) { subrepoErrorMessage(test_lib) }
 
 TEMPLATE = lib
 

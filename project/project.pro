@@ -3,20 +3,16 @@ TARGET = exception
 !include(../setup.pri) { includeErrorMessage(../setup.pri) }
 !include(../../pri/setup.pri) { error("Erro incluindo o subrepo pri -- $$TARGET") }
 
-!include(../../unpackers/setup.pri) { subrepoErrorMessage(unpackers) }
 !include(../../exception/setup.pri) { subrepoErrorMessage(exception) }
 !include(../../type_utils/setup.pri) { subrepoErrorMessage(type_utils) }
 !include(../../util/setup.pri) { subrepoErrorMessage(util) }
-
 
 TEMPLATE = lib
 CONFIG += static
 
 CONFIG += exception rtti
 
-
 SRC  = ./src
-
 
 HEADERS += \
 	$$SRC/BackTrace.h \
@@ -30,7 +26,6 @@ HEADERS += \
         $$SRC/svector.h \
         $$SRC/VectorIO.h \
 
-
 SOURCES += \
         $$SRC/BackTracePlatIndep.cpp \
         $$SRC/Demangling.cpp \
@@ -38,7 +33,6 @@ SOURCES += \
         $$SRC/Exception.cpp \
         $$SRC/Logger.cpp \
         $$SRC/VectorIO.cpp \
-
 
 win32 {
 	DEFINES -= UNICODE
@@ -108,13 +102,4 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
-
-
-
-
-
-
-
-
-
 
