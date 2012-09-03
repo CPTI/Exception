@@ -28,8 +28,8 @@ class QString;
 			if(!(exp)) { Error::assertFailed(software, #exp, __FILE__, __LINE__, message); } \
 		} while (false)
 #else // O unico operador que pode ser usado para qualquer coisa é o sizeof.
-	#define ERR_ASSERT(software, exp) do {} while ( false && sizeof(exp) < 1 )
-	#define ERR_ASSERT_MESSAGE(software, exp, message) do {} while (false && sizeof(exp) < 1 && sizeof(message) < 1)
+	#define ERR_ASSERT(software, exp) do {} while ( false && sizeof(software.name()) < 1 && sizeof(exp) < 1 )
+	#define ERR_ASSERT_MESSAGE(software, exp, message) do {} while (false && sizeof(software.name()) < 1 && sizeof(exp) < 1 && sizeof(message) < 1)
 #endif
 
 #ifdef DEBUG
