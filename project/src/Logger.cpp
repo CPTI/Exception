@@ -4,6 +4,7 @@
 #include "BackTrace.h"
 
 #include <QSharedPointer>
+#include <QStringBuilder>
 #include <VectorIO.h>
 #include <vector>
 
@@ -188,18 +189,38 @@ namespace Log {
 	}
 }
 
-namespace LogImpl {
+namespace {
 
-	Formatter<std::exception>::ret_type Formatter<std::exception>::format(const std::exception& t, const Log::Logger* l) {
+#define MAX_NESTED 10
+
+	QString formatException(int depth, const std::exception& t, const Log::Logger* l) {
 		using namespace Backtrace;
+
+		QString result;
+
 		if (l->getExceptionOpts() >= Log::LOG_ST) {
 			size_t depth = 0;
 			const StackFrame* frames = ExceptionLib::getBT(t, &depth, (l->getExceptionOpts() >= Log::LOG_ST_DBG));
-			return QString("%1:\n%2").arg(t.what()).arg(Backtrace::StackTrace::asString(depth, frames).c_str());
+			result = QString("%1:\n%2").arg(t.what()).arg(Backtrace::StackTrace::asString(depth, frames).c_str());
 		} else {
-			return QString("%1").arg(t.what());
+			result = QString("%1").arg(t.what());
 		}
+
+		const ExceptionLib::Exception* ex = dynamic_cast<const ExceptionLib::Exception*>(&t);
+
+		if (ex && ex->nested() && depth < MAX_NESTED) {
+			result += "\nNested exception: \n" % formatException(depth+1, *ex->nested(), l);
+		}
+
+		return result;
 	}
 
+}
+
+namespace LogImpl {
+
+	Formatter<std::exception>::ret_type Formatter<std::exception>::format(const std::exception& t, const Log::Logger* l) {		
+		return formatException(0, t, l);
+	}
 
 }
