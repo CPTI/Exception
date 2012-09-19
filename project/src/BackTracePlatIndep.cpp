@@ -5,18 +5,18 @@
 
 namespace Backtrace {
 
-	std::string StackTrace::asString(bool loadDebugSyms)
+	std::string StackTrace::asString(bool loadDebugSyms, int skip)
 	{
 		if (loadDebugSyms && !m_debugSmbolsLoaded) {
 			loadDebug();
 		}
-		return asString(m_frames.size(), &m_frames[0]);
+		return asString(m_frames.size(), &m_frames[0], skip);
 	}
 
-	std::string StackTrace::asString(int depth, const StackFrame* frames)
+	std::string StackTrace::asString(int depth, const StackFrame* frames, int skip)
 	{
 		std::stringstream ss;
-		for (int i = 0; i < depth; ++i) {
+		for (int i = skip; i < depth; ++i) {
 			ss << frames[i].addr << ":  " << frames[i].function << " in (" << frames[i].imageFile << ")";
 			if (frames[i].line >= 0) {
 				ss << " at " << frames[i].sourceFile << ": " << frames[i].line;

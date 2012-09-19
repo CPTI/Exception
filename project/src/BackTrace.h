@@ -28,9 +28,9 @@ namespace Backtrace {
 
 		~StackTrace() {}
 
-		std::string asString(bool loadDebug = false);
+		std::string asString(bool loadDebug = false, int skip = 0);
 
-		static std::string asString(int depth, const StackFrame* frames);
+		static std::string asString(int depth, const StackFrame* frames, int skip = 0);
 
 		bool isDebugLoaded() { return m_debugSmbolsLoaded; }
 
