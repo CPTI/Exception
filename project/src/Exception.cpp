@@ -4,6 +4,7 @@
 #include "Demangling.h"
 #include "StackAddressLoader.h"
 #include "DebugSymbolLoader.h"
+#include "Logger.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -208,8 +209,6 @@ namespace ExceptionLib {
 
 #endif
 
-
-
 namespace ExceptionLib {
 
 	static const size_t SKIP_FRAMES = 4;
@@ -229,32 +228,14 @@ namespace ExceptionLib {
 			}
 			cerr << "no active exception" << endl;
 		}
-		catch (const ExceptionLib::Exception& ex) {
-			cerr << "Caught an Exception: what: " << ex.what() << endl;
-			Backtrace::StackTrace* trace = ex.stacktrace();
-			if (trace) {
-				cerr << "stacktrace: " << endl << trace->asString() << endl;
-			} else {
-				cerr << "stacktrace: not available" << endl;
-			}
-
-			const ExceptionBase * eptr = &ex;
-			while(eptr->nested()) {
-				eptr = eptr->nested();
-				cerr << "Nested exception: what: " << eptr->what() << endl;
-				trace = eptr->stacktrace();
-				cerr << "stacktrace: " << endl << trace << endl;
-			}
-
-		}
 		catch (const std::exception &ex) {
-			cout << "Caught an std::exception. what(): " << ex.what() << endl;
+			Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unhandled exception:\n%1", ex);
 		}
 		catch (...) {
-			std::cout << "Caught unknown exception" << std::endl;
+			Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unknown unhandled exception");
 		}
 #else
-		cerr << "Caught unhandled exception" << endl;
+		Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unhandled exception");
 #endif
 	}
 

@@ -170,14 +170,14 @@ namespace ExceptionLib {
 	  Exception()
 		  :ExceptionBase(this, true, "Exception", NULL) {}
 
-	  explicit Exception(const char * errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(const char * errorMsg, const ExceptionBase* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg, nested) {}
 
-	  explicit Exception(std::string errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  explicit Exception(QString errorMsg, const Exception* nested = NULL, bool trace = true)
+	  explicit Exception(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -195,15 +195,15 @@ namespace ExceptionLib {
 
 	  IOException() : ExceptionBase(this, true, "IOException", NULL) {}
 
-	  IOException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
+	  IOException(const char * errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
-	  IOException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+	  IOException(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
 
 #ifdef QT_CORE_LIB
-	  IOException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+	  IOException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -215,14 +215,14 @@ namespace ExceptionLib {
   public:
 	  InvalidStateException() : ExceptionBase(this, true, "InvalidStateException", NULL) {}
 
-	  InvalidStateException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
+	  InvalidStateException(const char * errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
-	  InvalidStateException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+	  InvalidStateException(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  InvalidStateException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+	  InvalidStateException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -234,14 +234,14 @@ namespace ExceptionLib {
   public:
 	  AbortException() : ExceptionBase(this, true, "AbortException", NULL) {}
 
-	  AbortException(const char * errorMsg, const Exception* nested = NULL, bool trace = true )
+	  AbortException(const char * errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
-	  AbortException(std::string errorMsg, const Exception* nested = NULL, bool trace = true )
+	  AbortException(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  AbortException(QString errorMsg, const Exception* nested = NULL, bool trace = true )
+	  AbortException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -258,14 +258,14 @@ namespace ExceptionLib {
 	  ProgrammingError() : ExceptionBase(this, true, "ProgrammingError", NULL) {}
 
       /* Always enable stacktrace for this */
-	  ProgrammingError(const char * errorMsg, const Exception* nested = NULL)
+	  ProgrammingError(const char * errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-	  ProgrammingError(std::string errorMsg, const Exception* nested = NULL)
+	  ProgrammingError(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  ProgrammingError(QString errorMsg, const Exception* nested = NULL)
+	  ProgrammingError(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -278,14 +278,14 @@ namespace ExceptionLib {
   public:
 	  InvalidParameterException() : ExceptionBase(this, true, "InvalidParameterException", NULL) {}
 
-	  InvalidParameterException(const char * errorMsg, const Exception* nested = NULL)
+	  InvalidParameterException(const char * errorMsg, const ExceptionBase* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
 
-	  InvalidParameterException(std::string errorMsg, const Exception* nested = NULL)
+	  InvalidParameterException(std::string errorMsg, const ExceptionBase* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  InvalidParameterException(QString errorMsg, const Exception* nested = NULL)
+	  InvalidParameterException(QString errorMsg, const ExceptionBase* nested = NULL)
 		: ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -297,14 +297,14 @@ namespace ExceptionLib {
   public:
 	  SegmentationFault() : ExceptionBase(this, true, "SegmentationFault", NULL) {}
 
-	  SegmentationFault(const char * errorMsg, const Exception* nested = NULL)
+	  SegmentationFault(const char * errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-	  SegmentationFault(std::string errorMsg, const Exception* nested = NULL)
+	  SegmentationFault(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  SegmentationFault(QString errorMsg, const Exception* nested = NULL)
+	  SegmentationFault(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -316,14 +316,14 @@ namespace ExceptionLib {
   public:
 	  IllegalInstruction() : ExceptionBase(this, true, "IllegalInstruction", NULL) {}
 
-	  IllegalInstruction(const char * errorMsg, const Exception* nested = NULL)
+	  IllegalInstruction(const char * errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-	  IllegalInstruction(std::string errorMsg, const Exception* nested = NULL)
+	  IllegalInstruction(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  IllegalInstruction(QString errorMsg, const Exception* nested = NULL)
+	  IllegalInstruction(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
 
@@ -336,14 +336,14 @@ namespace ExceptionLib {
 
 	  FloatingPointException() : ExceptionBase(this, true, "FloatingPointException", NULL) {}
 
-	  FloatingPointException(const char * errorMsg, const Exception* nested = NULL)
+	  FloatingPointException(const char * errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-	  FloatingPointException(std::string errorMsg, const Exception* nested = NULL)
+	  FloatingPointException(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
 #ifdef QT_CORE_LIB
-	  FloatingPointException(QString errorMsg, const Exception* nested = NULL)
+	  FloatingPointException(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
 
