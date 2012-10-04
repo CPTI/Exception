@@ -120,6 +120,7 @@ void BacktraceTest::testBacktraceDebugInfo()
 	eff = std::min(eff, 5);
 
 	Backtrace::getPlatformDebugSymbolLoader().findDebugInfo(middle, eff);
+	QString executableName = qApp->applicationFilePath().split("/").back();
 
 	for (int i = 0; i < eff; ++i) {
 		QCOMPARE(middle[i].function, names[i]);
@@ -127,7 +128,7 @@ void BacktraceTest::testBacktraceDebugInfo()
 		QString imageFile  = QString::fromStdString(middle[i].imageFile);
 
         QVERIFY(!imageFile.isEmpty() && QFile::exists(imageFile));
-        QVERIFY(imageFile.contains("unit_test"));
+		QVERIFY(imageFile.contains(executableName));
 	}
 
 #ifdef DEBUG
