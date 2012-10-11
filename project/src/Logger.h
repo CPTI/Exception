@@ -9,6 +9,10 @@
 #include <exception>
 #include <string>
 #include <string.h>
+#include "svector.h"
+#include <list>
+#include <QList>
+#include <QVector>
 
 #include <QMap>
 #include <QFile>
@@ -36,7 +40,12 @@ namespace Log {
 	class Logger;
 }
 
-namespace LogImpl {
+namespace Log {
+
+	// placeholder para backtrace
+	struct BTPlaceHolder {};
+
+	extern BTPlaceHolder BT;
 
 	template<class T>
 	struct Formatter {
@@ -56,14 +65,57 @@ namespace LogImpl {
 		static ret_type format(const std::exception& t, const Log::Logger* l);
 	};
 
+	template<>
+	struct Formatter<BTPlaceHolder> {
+		typedef QString ret_type;
+		static ret_type format(const BTPlaceHolder& , const Log::Logger* l);
+	};
+
+	template<class V>
+	struct IterableFormatter {
+		typedef QString ret_type;
+		static ret_type format(const V& v, const Log::Logger*) {
+			QString ret = "[";
+			bool first = true;
+			for (typename V::const_iterator it = v.begin(); it != v.end(); ++it) {
+				if (!first) { ret += ", "; }
+				ret += QString("%1").arg(*it);
+				first = false;
+			}
+			ret += "]";
+			return ret;
+		}
+	};
+
+	template<class T>
+	struct Formatter<std::vector<T> > : public IterableFormatter<std::vector<T> > {	};
+
+
+	template<class T>
+	struct Formatter<std::list<T> > : public IterableFormatter<std::list<T> > {	};
+
+	template<class T>
+	struct Formatter<QVector<T> > : public IterableFormatter<QVector<T> > {	};
+
+
+	template<class T>
+	struct Formatter<QList<T> > : public IterableFormatter<QList<T> > {	};
+
+	template<class T>
+	struct Formatter<svector<T> > : public IterableFormatter<svector<T> > {	};
+
+}
+
+namespace LogImpl {
+
 
 	template<class T>
 	struct F {
 
 		typedef typename Loki::Select<
 			INSTANCE_OF(T, std::exception),
-			Formatter<std::exception>,
-			Formatter<T>
+			Log::Formatter<std::exception>,
+			Log::Formatter<T>
 		>::Result Frmttr;
 
 		static typename Frmttr::ret_type doIt(const T& t, const Log::Logger* l) {

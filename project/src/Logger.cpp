@@ -7,6 +7,7 @@
 #include <QStringBuilder>
 #include <VectorIO.h>
 #include <vector>
+#include <memory>
 
 static const char* levelNames[] = {
 	"ERROR ",
@@ -217,10 +218,16 @@ namespace {
 
 }
 
-namespace LogImpl {
+namespace Log {
 
 	Formatter<std::exception>::ret_type Formatter<std::exception>::format(const std::exception& t, const Log::Logger* l) {		
 		return formatException(0, t, l);
 	}
 
+	BTPlaceHolder BT;
+
+	Formatter<BTPlaceHolder>::ret_type Formatter<BTPlaceHolder>::format(const BTPlaceHolder& , const Log::Logger*)	{
+		std::auto_ptr<Backtrace::StackTrace> trace(Backtrace::trace());
+		return QString::fromStdString(trace->asString(true, 4 /* skip */));
+	}
 }
