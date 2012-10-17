@@ -1,5 +1,7 @@
 #include "DebugSymbolLoader.h"
 
+#include "SymbolCache.h"
+
 #include <bfd.h>
 #include <string>
 #include <stdlib.h>
@@ -15,6 +17,7 @@
 using namespace std;
 
 namespace Backtrace {
+	using namespace BacktracePrivate;
 
 	class BFDSymbolLoader: public IDebugSymbolLoader {
 
@@ -47,19 +50,26 @@ namespace Backtrace {
 		{
 			for (int i = 0; i < nFrames; ++i) {
 
-				BFD_context& ctx = getBFD(frames[i].imageFile);
-				if (ctx.valid) {
-					string source;
-					string function;
-					int line;
+				const SymbolCache::CachedFrame* frame = SymbolCache::instance().cachedFor(frames[i].addr);
 
-					find(ctx, frames[i].addr, source, function, line);
-					frames[i].sourceFile = source;
-					frames[i].line = line;
+				if (frame && frame->state == SymbolCache::SymbolsLoaded) {
+					frames[i] = *frame;
+				} else {
+					BFD_context& ctx = getBFD(frames[i].imageFile);
+					if (ctx.valid) {
+						string source;
+						string function;
+						int line;
 
-                    if (!Demangling::demangle(function.c_str(), frames[i].function)) {
-                        frames[i].function = function;
-                    }
+						find(ctx, frames[i].addr, source, function, line);
+						frames[i].sourceFile = source;
+						frames[i].line = line;
+
+						if (!Demangling::demangle(function.c_str(), frames[i].function)) {
+							frames[i].function = function;
+						}
+						SymbolCache::instance().updateCache(&frames[i], SymbolCache::SymbolsLoaded);
+					}
 				}
 			}
 			return false;

@@ -24,6 +24,7 @@ HEADERS += \
         $$SRC/Software.h \
         $$SRC/StackAddressLoader.h \
         $$SRC/svector.h \
+        $$SRC/SymbolCache.h \
         $$SRC/VectorIO.h \
 
 SOURCES += \
@@ -32,7 +33,9 @@ SOURCES += \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
         $$SRC/Logger.cpp \
+        $$SRC/SymbolCache.cpp \
         $$SRC/VectorIO.cpp \
+
 
 win32 {
 	DEFINES -= UNICODE
@@ -102,4 +105,6 @@ release {
 		QMAKE_CXXFLAGS -= -O0
 	}
 }
+
+
 

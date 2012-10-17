@@ -1,5 +1,5 @@
 #include "DebugSymbolLoader.h"
-
+#include "SymbolCache.h"
 
 #include <cxxabi.h>
 
@@ -7,21 +7,24 @@
 #include <vector>
 #include <sstream>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <execinfo.h>
 #include <string.h>
 
 #include <sys/stat.h>
+#include <fstream>
+#include <memory>
+#include <ext/stdio_filebuf.h>
 
+#include <QThreadStorage>
 
 using namespace std;
 
 namespace {
 	static bool executable_found = false;
 	static string executable;
-
-
 
 	char * opt_getcwd (char * stack_buf, int stack_size)
 	{
@@ -106,72 +109,144 @@ namespace {
 		}
 	};
 
+
+	bool bidirectional_popen(std::vector<const char*>& command, int* in, int*out) {
+
+		int pipein[2];
+		int pipeout[2];
+
+		if (pipe(pipein) == -1 || pipe(pipeout) == -1) {
+			return false;
+		}
+
+		int pid = fork();
+
+		if (pid == 0) {
+			// sou o filho, o pipein é meu output
+
+			close(pipein[0]);
+			close(pipeout[1]);
+
+			if (dup2(pipein[1],STDOUT_FILENO) == -1 || dup2(pipeout[0],STDIN_FILENO)) {
+				close(pipein[1]);
+				close(pipeout[0]);
+				return false;
+			}
+
+			command.push_back(NULL);
+			if (execv(command[0], const_cast<char**>(&command[1])) == -1) {
+				close(pipein[1]);
+				close(pipeout[0]);
+				return false;
+			}
+			return true;
+		} else {
+			// sou o pai
+			close(pipein[1]);
+			close(pipeout[0]);
+			*in = pipein[0];
+			*out = pipeout[1];
+			return true;
+		}
+
+		return false;
+	}
 }
 
 
 namespace Backtrace {
+	using namespace BacktracePrivate;
 
 	class Addr2LineSymbolLoader: public IDebugSymbolLoader {
+
+		ostream a2lout;
+		istream a2lin;
+
+		auto_ptr<__gnu_cxx::stdio_filebuf<char> > outfb;
+		auto_ptr<__gnu_cxx::stdio_filebuf<char> > infb;
+
 	public:
 
+		Addr2LineSymbolLoader() : a2lout(NULL), a2lin(NULL) {
+			//initializePipes();
+		}
+		~Addr2LineSymbolLoader() {
+		}
+
+		void initializePipes() {
+			if (executable_found) {
+				std::vector<const char*> command;
+				command.push_back("/usr/bin/addr2line");
+				command.push_back("addr2line");
+				command.push_back("-Cife");
+				command.push_back(executable.c_str());
+
+				int in, out;
+
+				if (bidirectional_popen(command, &in, &out)) {
+					outfb.reset(new  __gnu_cxx::stdio_filebuf<char>(out, ios_base::out));
+					infb.reset(new __gnu_cxx::stdio_filebuf<char>(in, ios_base::in));
+
+					a2lout.rdbuf(outfb.get());
+					a2lin.rdbuf(infb.get());
+				}
+			}
+		}
 
 
 		virtual bool findDebugInfo(StackFrame* frames, int nFrames) {
 
 			if (executable_found && nFrames > 0) {
+				if (!a2lout.good() || !a2lin.good()) {
+					initializePipes();
+				}
 
-				stringstream command;
-				command << "addr2line -Cife ";
-				command << executable;
+				std::vector<size_t> misses;
+				misses.reserve(nFrames);
 
 				for (int i = 0; i < nFrames; i++) {
-					command << " " << frames[i].addr;
-				}
-				command << " 2>/dev/null";
+					misses.push_back(i);
+					a2lout << frames[i].addr << "\n";
 
-				FILE *p = popen(command.str().c_str(), "r");
-
-				if (p) {
-					// workaround
-					int c = fgetc(p);
-					if (c != EOF) ungetc(c, p);
-
-					if (!feof(p)) {
-						size_t lsize = 256;
-						char * line = (char*) malloc(lsize);
-						ssize_t read;
-
-						bool func_name = true;
-
-						int i = 0;
-
-
-						while ((read = getline(&line, &lsize, p)) > 0) {
-							if (func_name) {
-								line[read-1] = '\0';
-								func_name = false;
-								frames[i].function = line;
-							} else {
-								func_name = true;
-								frames[i].imageFile = executable;
-
-								char* pos = strstr(line, ":");
-								if (pos) {
-									*pos = 0;
-
-									frames[i].sourceFile = line;
-									frames[i].line = atoi(pos+1);
-								}
-
-								i++;
-							}
-						}
-
-						fclose(p);
-						free(line);
-						return true;
+					const SymbolCache::CachedFrame* frame = SymbolCache::instance().cachedFor(frames[i].addr);
+					if (frame && frame->state == SymbolCache::SymbolsLoaded) {
+						frames[i] = *frame;
+					} else {
+						misses.push_back(i);
+						a2lout << frames[i].addr << "\n";
 					}
 				}
+				a2lout.flush();
+
+				if (misses.size() == 0) {
+					return true;
+				}
+				bool status = false;
+				for (size_t i = 0; a2lin.good() && i < misses.size(); ++i) {
+					try {
+						StackFrame& frame = frames[misses[i]];
+
+						string function;
+						getline(a2lin, function);
+
+						string lineinfo;
+						getline(a2lin, lineinfo);
+						int colon = lineinfo.find_last_of(':');
+						lineinfo.replace(colon, 1, 1, ' ');
+						stringstream ss(lineinfo);
+
+						ss >> frame.sourceFile;
+						ss >> frame.line;
+						std::swap(function, frame.function);
+						frame.imageFile = executable;
+						SymbolCache::instance().updateCache(&frame, SymbolCache::SymbolsLoaded);
+						status = true;
+					} catch (...) {
+						// o stream pode ter fechado nesse frame
+					}
+				}
+				return status;
+
 			} else {
 				return true;
 			}
@@ -182,8 +257,12 @@ namespace Backtrace {
 
 	IDebugSymbolLoader& getPlatformDebugSymbolLoader()
 	{
-		static Addr2LineSymbolLoader instance;
-		return instance;
+		static QThreadStorage<Addr2LineSymbolLoader*> storage;
+
+		if (!storage.hasLocalData()) {
+			storage.setLocalData(new Addr2LineSymbolLoader());
+		}
+		return *storage.localData();
 	}
 
 	void initializeExecutablePath(const char* argv0) {
@@ -191,7 +270,6 @@ namespace Backtrace {
 		string rel_path(argv0);
 		executable_found = finder.whereis(rel_path, executable);
 	}
-
 }
 
 

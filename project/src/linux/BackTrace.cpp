@@ -134,17 +134,6 @@ namespace Backtrace {
 	}
 
 
-	StackTrace* trace()
-	{
-		const int MAX_STACK = 32;
-		std::auto_ptr<StackTrace> trace(new StackTrace());
-		trace->getFrames().resize(MAX_STACK);
-		const int num = getPlatformStackLoader().getStack(MAX_STACK, &trace->getFrames()[0]);
-		trace->getFrames().resize(num);
-
-		return trace.release();
-	}
-
 	bool backtraceSupported()
 	{
 		return true;
