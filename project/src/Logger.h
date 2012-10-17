@@ -101,8 +101,10 @@ namespace Log {
 	template<class T>
 	struct Formatter<QList<T> > : public IterableFormatter<QList<T> > {	};
 
+#ifdef DEBUG
 	template<class T>
 	struct Formatter<svector<T> > : public IterableFormatter<svector<T> > {	};
+#endif
 
 }
 
