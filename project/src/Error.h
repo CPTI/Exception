@@ -4,14 +4,19 @@
 #ifndef ERRO_H
 #define ERRO_H
 
+
 #include "Software.h"
 #include <stddef.h>
 
+
 #include <QObject>
+#include <QVariant>
+
 
 class QFile;
 class QMutex;
 class QString;
+
 
 // Macros
 #define ERR_ABORT(software, message) \
