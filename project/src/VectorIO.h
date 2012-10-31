@@ -3,7 +3,9 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include <QIODevice>
+
+
+class QIODevice;
 
 namespace VectorIO
 {

@@ -21,6 +21,7 @@ HEADERS += \
         $$SRC/Error.h \
         $$SRC/Exception.h \
         $$SRC/Logger.h \
+        $$SRC/LoggerFwd.h \
         $$SRC/Software.h \
         $$SRC/StackAddressLoader.h \
         $$SRC/svector.h \

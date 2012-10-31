@@ -2,7 +2,7 @@
 #include "DebugSymbolLoader.h"
 #include "StackAddressLoader.h"
 #include <memory>
-
+#include <sstream>
 // This file contains the platform independent parts of Backtrace.h's implementation
 
 

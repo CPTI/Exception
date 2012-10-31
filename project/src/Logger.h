@@ -20,6 +20,8 @@
 
 #include <cstdio>
 
+#include "LoggerFwd.h"
+
 namespace Log {
 
 	enum Level {
@@ -36,8 +38,6 @@ namespace Log {
 		LOG_ST,
 		LOG_ST_DBG
 	};
-
-	class Logger;
 }
 
 namespace Log {

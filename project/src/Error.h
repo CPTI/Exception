@@ -8,9 +8,7 @@
 #include "Software.h"
 #include <stddef.h>
 
-
 #include <QObject>
-#include <QVariant>
 
 
 class QFile;

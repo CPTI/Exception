@@ -14,9 +14,6 @@
 #ifdef QT_CORE_LIB
 #include <QtCore>
 #include <QString>
-#include <QCoreApplication>
-#include <QList>
-#include <QString>
 	typedef QtConcurrent::Exception BaseExceptionType;
 #else
 #include <string>

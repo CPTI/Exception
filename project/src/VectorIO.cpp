@@ -5,6 +5,7 @@
 #include <QAbstractSocket>
 #endif
 #include <QFile>
+#include <QIODevice>
 
 #ifdef LINUX
 #include <sys/uio.h>
