@@ -21,8 +21,6 @@ static const char* levelNames[] = {
 
 namespace Log {
 
-
-
 	using namespace std;
 	using namespace ExceptionLib;
 
@@ -52,32 +50,34 @@ namespace Log {
 		m_file.open(out, QIODevice::WriteOnly);
 	}
 
-	const char * ColoredStreamOutput::error_attr = "\x1b[0;31m";
-	const char * ColoredStreamOutput::warn_attr = "\x1b[0;33m";
-	const char * ColoredStreamOutput::info_attr =  "\x1b[1;37m";
-	const char * ColoredStreamOutput::debug0_attr = "\x1b[0;34m";
-	const char * ColoredStreamOutput::debug1_attr = "\x1b[1;34m";
-	const char * ColoredStreamOutput::debug2_attr = "\x1b[0;37m";
-	const char * ColoredStreamOutput::reset = "\x1b[0m";
+	static const char reset[] = "\x1b[0m";
 
-	const char * ColoredStreamOutput::attrs[] = {
-		error_attr,
-		warn_attr,
-		info_attr,
-		debug0_attr,
-		debug1_attr,
-		debug2_attr
+	static char attrs[][8] = {
+		"\x1b[0;31m",
+		"\x1b[0;33m",
+		"\x1b[1;37m",
+		"\x1b[0;34m",
+		"\x1b[1;34m",
+		"\x1b[0;37m"
 	};
+
+	ColoredStreamOutput::~ColoredStreamOutput() {
+		VectorIO::out_elem epilogue = {
+			reinterpret_cast<const void*>(reset), sizeof(reset)-1
+		};
+
+		VectorIO::write_vec(&m_file, &epilogue, 1);
+	}
 
 	void ColoredStreamOutput::write(Level level, VectorIO::out_elem* data, int len) {
 
 		VectorIO::out_elem prologue = {
 			reinterpret_cast<const void*>(attrs[level]),
-			strlen(attrs[level])
+			sizeof(attrs[level]) - 1
 		};
 
 		VectorIO::out_elem epilogue = {
-			reinterpret_cast<const void*>(reset), strlen(reset)
+			reinterpret_cast<const void*>(reset), sizeof(reset)-1
 		};
 
 		std::vector<VectorIO::out_elem> out;
@@ -95,6 +95,44 @@ namespace Log {
 
 	QSharedPointer<ColoredStreamOutput> ColoredStreamOutput::StdOut() {
 		return QSharedPointer<ColoredStreamOutput>(new ColoredStreamOutput(stdout));
+	}
+
+	LineBufferOutput::LineBufferOutput(int size)
+		: m_lastLine(-1)
+		, m_maxSize(size)
+	{}
+
+	LineBufferOutput::~LineBufferOutput() {}
+
+	void LineBufferOutput::write(Level level, VectorIO::out_elem* data, int len)
+	{
+		// Como temos que copiar o conteúdo de data mesmo, é mais eficiente
+		// concatenar tudo logo
+
+		int totalSize = 1; // para o \0 no final
+
+		for (int i = 0; i < len; ++i) {
+			totalSize += data[i].size;
+		}
+
+		Line line(totalSize, level);
+
+		char* out = line.wdata();
+
+		for (int i = 0; i < len; ++i) {
+			memcpy(out, data[i].begin, data[i].size);
+			out += data[i].size;
+		}
+		*out = '\0';
+
+		QMutexLocker lock(&m_mutex);
+		line.setLineId(++m_lastLine);
+
+		m_lines.push_back(line);
+
+		while(m_lines.size() > m_maxSize) {
+			m_lines.pop_front();
+		}
 	}
 
 
@@ -176,13 +214,13 @@ namespace Log {
 	void Logger::output(Level level, const char* str, int len) {
 
 		VectorIO::out_elem vec[] = {
-			{ "Log: ", strlen("Log: ") },
+			{ "Log: ", sizeof("Log: ") - 1 },
 			{ levelNames[level], strlen(levelNames[level]) },
-			{ " - ", strlen(" - ") },
+			{ " - ", sizeof(" - ") - 1 },
 			{ m_name.constData(), m_name.size() },
-			{ ": ", strlen(": ") },
+			{ ": ", sizeof(": ") -1 },
 			{ str, len },
-			{ "\n", strlen("\n") },
+			{ "\n", sizeof("\n") -1 },
 		};
 
 

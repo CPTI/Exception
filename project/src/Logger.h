@@ -2,23 +2,26 @@
 #define LOGGER_H
 
 
-#include "Exception.h"
+#include "ArrayPtr.h"
 #include "BackTrace.h"
+#include "Exception.h"
+#include "svector.h"
 #include "TypeManip.h"
 #include "VectorIO.h"
+
+#include <algorithm>
+#include <cstdio>
+#include <deque>
 #include <exception>
 #include <string>
 #include <string.h>
-#include "svector.h"
 #include <list>
-#include <QList>
-#include <QVector>
 
-#include <QMap>
 #include <QFile>
+#include <QList>
+#include <QMap>
 #include <QSharedPointer>
-
-#include <cstdio>
+#include <QVector>
 
 #include "LoggerFwd.h"
 
@@ -138,6 +141,24 @@ namespace Log {
 		virtual void write(Level level, VectorIO::out_elem* data, int len) = 0;
 	};
 
+	class SplitOutput: public Output {
+	public:
+		virtual ~SplitOutput() {}
+
+		virtual void write(Level level, VectorIO::out_elem* data, int len) {
+			foreach(const QSharedPointer<Output>& output, m_outputs) {
+				output->write(level, data, len);
+			}
+		}
+
+		void addOutput(const QSharedPointer<Output>& out) {
+			m_outputs.push_back(out);
+		}
+
+	private:
+		svector<QSharedPointer<Output> > m_outputs;
+	};
+
 	// Segundo o posix as operações de stream são sempre atômicas: http://www.gnu.org/software/libc/manual/html_node/Streams-and-Threads.html;
 	class StreamOutput : public Output {
 	public:
@@ -154,24 +175,107 @@ namespace Log {
 	class ColoredStreamOutput : public Output {
 	public:
 		ColoredStreamOutput(::std::FILE*  out);
+		virtual ~ColoredStreamOutput();
 
 		void write(Level level, VectorIO::out_elem* data, int len);
 
 		static QSharedPointer<ColoredStreamOutput> StdErr();
 		static QSharedPointer<ColoredStreamOutput> StdOut();
 
-		static const char * error_attr;
-		static const char * warn_attr;
-		static const char * info_attr;
-		static const char * debug0_attr;
-		static const char * debug1_attr;
-		static const char * debug2_attr;
-		static const char * reset;
-
-		static const char * attrs[];
-
 	private:
 		QFile m_file;
+	};
+
+	/**
+	 * @brief The LineBufferOutput class
+	 *
+	 * Esta classe representa um buffer de tamanho fixo para a saída dos
+	 * logs. A cada linha ela vai enchendo até que o limite máximo, à partir
+	 * daí, a primeira linha é descartada a cada escrita.
+	 *
+	 * Cada linha tem um identificador único crescente, assim é possível
+	 * verificar se há uma saída nova.
+	 *
+	 * Para garantir apenas uma cópia de memória as linhas são armazenadas
+	 * no struct Line. Assim conseguimos minimizar o custo da instrumentação.
+	 *
+	 * Essa classe é thread-safe
+	 *
+	 */
+	class LineBufferOutput: public Output {
+	public:
+
+		class Line {
+		public:
+			Line(int dataSize, Level level) : m_data(dataSize), m_line(-1), m_level(level) {}
+			Line() : m_data(0), m_line(-1), m_level(LDEBUG0)  {}
+			Line(const Line& that) : m_data(that.m_data), m_line(that.m_line), m_level(that.m_level) {}
+
+			const char* data() const { return m_data.get(); }
+			int64_t lineId() const { return m_line; }
+			Level level() const { return m_level; }
+
+		private:
+			friend class LineBufferOutput;
+			char* wdata() { return m_data.get(); }
+			void setLineId(int64_t id) { m_line = id; }
+
+			SharedArray<char> m_data;
+			int64_t m_line;
+			Level m_level;
+		};
+
+		/** Retorna o número de linhas que este buffer contém */
+		int numLines() const;
+
+		/** Retorna o máximo de linhas */
+		int capacity() const;
+
+		int64_t lastLineId() const { return m_lastLine; }
+
+		/** Usar o método pop garante o minimo de contencao com os escritores
+		 * Como várias threads podem escrever no log, tem um mutex interno que
+		 * precisa ser adquirido
+		 */
+		Line pop();
+
+		/** Copia as N primeiras entradas
+		 *
+		 * Exemplo:
+		 *
+		 * std::vector<Line> lines(buffer.numLines());
+		 * buffer.readN(lines.size(), lines.begin())
+		 *
+		 * Funciona com a maioria dos conteineres
+		 */
+		template<class Iterator>
+		int readN(size_t numLines, Iterator out) {
+			QMutexLocker lock(&m_mutex);
+			const int linesToRead = std::min(m_lines.size(), numLines);
+			std::copy(m_lines.begin(), m_lines.begin()+linesToRead, out);
+			return numLines;
+		}
+
+		/** Extrai as N primeiras entradas*/
+		template<class Iterator>
+		int popN(size_t numLines, Iterator out) {
+			QMutexLocker lock(&m_mutex);
+			const int linesToRead = std::min(m_lines.size(), numLines);
+			std::copy(m_lines.begin(), m_lines.begin()+linesToRead, out);
+			return numLines;
+		}
+
+		LineBufferOutput(int size);
+		~LineBufferOutput();
+
+		void write(Level level, VectorIO::out_elem* data, int len);
+
+	private:
+
+		QMutex m_mutex;
+		volatile int64_t m_lastLine;
+		const size_t m_maxSize;
+		std::deque<Line> m_lines;
 	};
 
 
