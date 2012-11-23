@@ -167,9 +167,7 @@ namespace {
 
 }
 
-extern "C" void __real___cxa_throw( void* thrown_exception,
-									const std::type_info* tinfo, void ( *dest )( void* ) )
-__attribute__(( noreturn ));
+extern "C" void __real___cxa_throw( void* thrown_exception, const std::type_info* tinfo, void ( *dest )( void* ) ) __attribute__(( noreturn ));
 
 extern "C" void __wrap___cxa_throw( void* thrown_exception,
 									const std::type_info* tinfo, void ( *dest )( void* ) )
@@ -195,6 +193,17 @@ extern "C" void __wrap___cxa_throw( void* thrown_exception,
 		}
 	}
 	__real___cxa_throw( thrown_exception, tinfo, dest );
+}
+
+extern "C" void __real___cxa_bad_cast() __attribute__(( noreturn ));
+
+extern "C" void __wrap___cxa_bad_cast()
+{
+	// A implementacao do bad_cast na libstdc++ é essa mesmo,
+	// só que não consseguimos interceptar o throw usado lá dentro
+	// por algum motivo
+	throw std::bad_cast();
+	return;
 }
 
 #else

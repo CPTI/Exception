@@ -29,7 +29,7 @@ unix {
     	    EXE_DEPS += $$BUILD_DIR/libexception_tests.a
 	    LIBS += -Wl,--whole-archive -lexception_tests -Wl,--no-whole-archive
 	}
-	LIBS += -lexception -Wl,--wrap,__cxa_throw
+	LIBS += -lexception -Wl,--wrap,__cxa_throw -Wl,--wrap,__cxa_bad_cast
 	bfd {
 		LIBS += -lbfd -ldl -lz -liberty
 	}
