@@ -148,7 +148,7 @@ namespace Log {
 
 	void LoggerFactory::changeDefaultOutput(const QSharedPointer<Output>& o)
 	{
-		defaultOutput() = o;
+		defaultOutputPriv() = o;
 	}
 
 	LoggerFactory::OutputPtr LoggerFactory::defaultOutput()
