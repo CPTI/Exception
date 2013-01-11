@@ -226,10 +226,10 @@ namespace Log {
 		};
 
 		/** Retorna o número de linhas que este buffer contém */
-		int numLines() const;
+		int numLines() const { return m_lines.size(); }
 
 		/** Retorna o máximo de linhas */
-		int capacity() const;
+		int capacity() const { return m_maxSize; }
 
 		int64_t lastLineId() const { return m_lastLine; }
 
