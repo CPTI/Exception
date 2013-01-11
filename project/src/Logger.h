@@ -138,16 +138,16 @@ namespace Log {
 	public:
 		virtual ~Output() {}
 		// O unico requisito de write é que deve ser atomico
-		virtual void write(Level level, VectorIO::out_elem* data, int len) = 0;
+		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) = 0;
 	};
 
 	class SplitOutput: public Output {
 	public:
 		virtual ~SplitOutput() {}
 
-		virtual void write(Level level, VectorIO::out_elem* data, int len) {
+		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
 			foreach(const QSharedPointer<Output>& output, m_outputs) {
-				output->write(level, data, len);
+				output->write(l, level, data, len);
 			}
 		}
 
@@ -164,7 +164,7 @@ namespace Log {
 	public:
 		StreamOutput(::std::FILE*  out);
 
-		void write(Level level, VectorIO::out_elem* data, int len);
+		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
 		static QSharedPointer<StreamOutput> StdErr();
 		static QSharedPointer<StreamOutput> StdOut();
@@ -177,7 +177,7 @@ namespace Log {
 		ColoredStreamOutput(::std::FILE*  out);
 		virtual ~ColoredStreamOutput();
 
-		void write(Level level, VectorIO::out_elem* data, int len);
+		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
 		static QSharedPointer<ColoredStreamOutput> StdErr();
 		static QSharedPointer<ColoredStreamOutput> StdOut();
@@ -268,7 +268,7 @@ namespace Log {
 		LineBufferOutput(int size);
 		~LineBufferOutput();
 
-		void write(Level level, VectorIO::out_elem* data, int len);
+		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
 	private:
 

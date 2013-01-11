@@ -31,7 +31,7 @@ namespace Log {
 		m_file.open(out, QIODevice::WriteOnly);
 	}
 
-	void StreamOutput::write(Level, VectorIO::out_elem* data, int len) {
+	void StreamOutput::write(const Logger&, Level, VectorIO::out_elem* data, int len) {
 		VectorIO::write_vec(&m_file, data, len);
 	}
 
@@ -69,7 +69,7 @@ namespace Log {
 		VectorIO::write_vec(&m_file, &epilogue, 1);
 	}
 
-	void ColoredStreamOutput::write(Level level, VectorIO::out_elem* data, int len) {
+	void ColoredStreamOutput::write(const Logger&, Level level, VectorIO::out_elem* data, int len) {
 
 		VectorIO::out_elem prologue = {
 			reinterpret_cast<const void*>(attrs[level]),
@@ -104,7 +104,7 @@ namespace Log {
 
 	LineBufferOutput::~LineBufferOutput() {}
 
-	void LineBufferOutput::write(Level level, VectorIO::out_elem* data, int len)
+	void LineBufferOutput::write(const Logger&, Level level, VectorIO::out_elem* data, int len)
 	{
 		// Como temos que copiar o conteúdo de data mesmo, é mais eficiente
 		// concatenar tudo logo
@@ -224,7 +224,7 @@ namespace Log {
 		};
 
 
-		m_output->write(level, vec, 7);
+		m_output->write(*this, level, vec, 7);
 	}
 }
 
