@@ -319,7 +319,7 @@ namespace Log {
 
 	public:
 
-		QString getName() { return QString(m_name); }
+		QString getName() const { return QString(m_name); }
 
 		Level getLevel() const { return m_level; }
 
