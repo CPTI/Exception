@@ -28,7 +28,7 @@ namespace Log {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
 		}
-		m_file.open(out, QIODevice::WriteOnly);
+		m_file.open(out, QIODevice::WriteOnly|QIODevice::Unbuffered);
 	}
 
 	void StreamOutput::write(const Logger&, Level, VectorIO::out_elem* data, int len) {
@@ -47,7 +47,7 @@ namespace Log {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
 		}
-		m_file.open(out, QIODevice::WriteOnly);
+		m_file.open(out, QIODevice::WriteOnly|QIODevice::Unbuffered);
 	}
 
 	static const char reset[] = "\x1b[0m";

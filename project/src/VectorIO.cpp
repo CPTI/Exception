@@ -9,12 +9,11 @@
 
 #ifdef LINUX
 #include <sys/uio.h>
+#include <unistd.h>
 #endif
-
 
 namespace {
 	int fallback_write(QIODevice* dev, VectorIO::out_elem* data, size_t n) {
-
 		QByteArray bytes;
 		for (size_t i = 0; i < n; ++i) {
 			bytes.append(reinterpret_cast<const char*>(data[i].begin), data[i].size);
@@ -25,8 +24,19 @@ namespace {
 #ifdef LINUX
 	int filedes_write(int fd, VectorIO::out_elem* data, size_t n) {
 
-		// meu out_elem é binariamente igual ao iovec;
-		return writev(fd, reinterpret_cast<iovec*>(data), n);
+		// Aparentemente quando o fd é um terminal a saida pode ficar misturada no linux
+		// http://stackoverflow.com/questions/9336572/how-does-list-i-o-writev-internally-work
+
+		if (isatty(fd)) {
+			QByteArray bytes;
+			for (size_t i = 0; i < n; ++i) {
+				bytes.append(reinterpret_cast<const char*>(data[i].begin), data[i].size);
+			}
+			return write(STDOUT_FILENO,bytes.data(), bytes.size());
+		} else {
+			// meu out_elem é binariamente igual ao iovec;
+			return writev(STDOUT_FILENO, reinterpret_cast<iovec*>(data), n);
+		}
 	}
 #endif
 
@@ -57,5 +67,4 @@ namespace VectorIO
 		out.open(dev, QIODevice::WriteOnly);
 		return write_vec(&out, data, n);
 	}
-
 }
