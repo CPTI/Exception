@@ -159,6 +159,30 @@ namespace Log {
 		svector<QSharedPointer<Output> > m_outputs;
 	};
 
+	class LevelFilter: public Output {
+	public:
+
+		LevelFilter(QSharedPointer<Output> out = QSharedPointer<Output>(), Level l = LINFO) : m_output(out), m_level(l) {}
+		virtual ~LevelFilter() {}
+
+		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
+			if (!m_output.isNull() && m_level >= level) {
+				m_output->write(l, level, data, len);
+			}
+		}
+
+		void setOutput(const QSharedPointer<Output>& out) {
+			m_output = out;
+		}
+
+		void setLevel(Level l) { m_level = l; }
+		Level getLevel() const { return m_level; }
+
+	private:
+		QSharedPointer<Output> m_output;
+		Level m_level;
+	};
+
 	// Segundo o posix as operações de stream são sempre atômicas: http://www.gnu.org/software/libc/manual/html_node/Streams-and-Threads.html;
 	class StreamOutput : public Output {
 	public:
