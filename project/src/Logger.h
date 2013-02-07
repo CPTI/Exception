@@ -50,6 +50,13 @@ namespace Log {
 
 	extern BTPlaceHolder BT;
 
+	struct TimeMS {
+		TimeMS(qint64 relativeTo = 0) : m_rel(relativeTo) {}
+		qint64 m_rel;
+	};
+
+	extern TimeMS NowMS;
+
 	template<class T>
 	struct Formatter {
 		typedef const T& ret_type;
@@ -72,6 +79,12 @@ namespace Log {
 	struct Formatter<BTPlaceHolder> {
 		typedef QString ret_type;
 		static ret_type format(const BTPlaceHolder& , const Log::Logger* l);
+	};
+
+	template<>
+	struct Formatter<TimeMS> {
+		typedef qint64 ret_type;
+		static ret_type format(const TimeMS& , const Log::Logger* l);
 	};
 
 	template<class V>

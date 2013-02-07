@@ -8,6 +8,7 @@
 #include <VectorIO.h>
 #include <vector>
 #include <memory>
+#include <QDateTime>
 
 static const char* levelNames[] = {
 	"ERROR ",
@@ -17,6 +18,17 @@ static const char* levelNames[] = {
 	"DEBUG1",
 	"DEBUG2"
 };
+
+namespace {
+	qint64 currentTimeMs() {
+#if QT_VERSION >= 0x040700
+		return QDateTime::currentMSecsSinceEpoch();
+#else
+		QDateTime dateTime = QDateTime::currentDateTime();
+		return dateTime.toTime_t() * 1000 + dateTime.time().msec();
+#endif
+	}
+}
 
 
 namespace Log {
@@ -267,5 +279,11 @@ namespace Log {
 	Formatter<BTPlaceHolder>::ret_type Formatter<BTPlaceHolder>::format(const BTPlaceHolder& , const Log::Logger*)	{
 		std::auto_ptr<Backtrace::StackTrace> trace(Backtrace::trace());
 		return QString::fromStdString(trace->asString(true, 4 /* skip */));
+	}
+
+	TimeMS NowMS;
+
+	Formatter<TimeMS>::ret_type Formatter<TimeMS>::format(const TimeMS& t, const Log::Logger*)	{
+		return (currentTimeMs() - t.m_rel);
 	}
 }
