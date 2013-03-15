@@ -32,10 +32,10 @@ namespace {
 			for (size_t i = 0; i < n; ++i) {
 				bytes.append(reinterpret_cast<const char*>(data[i].begin), data[i].size);
 			}
-			return write(STDOUT_FILENO,bytes.data(), bytes.size());
+			return write(fd,bytes.data(), bytes.size());
 		} else {
 			// meu out_elem é binariamente igual ao iovec;
-			return writev(STDOUT_FILENO, reinterpret_cast<iovec*>(data), n);
+			return writev(fd, reinterpret_cast<iovec*>(data), n);
 		}
 	}
 #endif
