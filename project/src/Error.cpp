@@ -65,6 +65,7 @@ const Software* Error::s_mainSoftware = 0;
 const Software& Error::mainSoftware()
 {
 	if (s_mainSoftware == NULL) {
+		std::cout << "Sistema de erros não inicializado. Chame Error::initialize() na função main" << std::endl;
 		exit(1);
 	}
 	return *s_mainSoftware;
