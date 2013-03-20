@@ -6,6 +6,7 @@
 
 
 #include "Software.h"
+#include "LoggerFwd.h"
 #include <stddef.h>
 
 #include <QObject>
@@ -146,20 +147,6 @@ public:
 	 */
 	static void initialize(const Software& mainSoftware);
 
-	/*! \brief Gera um evento de log. */
-	static void log(
-			const Software& software,
-			//! Mensagem que será registrada.
-			QString message);
-
-	/*! \brief Define o sistema de log deve escrever no console. */
-	static void setLogEchoEnabled(
-		//! verdadeiro para ativar a escrita.
-		bool enabled)
-	{
-		logEchoEnabled() = enabled;
-	}
-
 	/*! \brief Exibe um aviso de erro fatal, e aborta o programa.
 	 *
 	 * Esta função não deve ser chamada diretamente, a macro ERR_ABORT()
@@ -275,30 +262,10 @@ private:
 			//! Informações adicionais da falha.
 			const QString &additionalInfo);
 
-	//! Decritor do arquivo de log.
-	static QFile& logFile();
-
-	//! Flag indicando se o log deve ser escrito no console.
-	static bool& logEchoEnabled();
-
-	//! Mutex para garantir atomicidade das operações de log
-	static QMutex* mutex();
+	static Log::Logger& errLog();
 
 	static const Software* s_mainSoftware;
 };
-
-/*! \brief Callback do qt utilizada para receber notificações do framework. */
-void ERR_qtMessageOutput(
-	//! Tipo da mensagem.
-	QtMsgType type,
-	//! Mensagem.
-	const char * message);
-
-/*! \brief Retorna uma string contendo a stacktrace desta chamada
- *
- * \return Stack trace na forma textual ou QString::null em caso de erro.
- */
-QString getStackTrace();
 
 #endif // ERRO_H
 
