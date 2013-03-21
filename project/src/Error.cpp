@@ -101,7 +101,7 @@ void Error::abortPrivate(
 {
 	errLog().log(Log::LERROR, "ERRO FATAL - O programa será abortado.\n"
 				 "%1\n"
-				 "Arquivo: %3\n"
+				 "Arquivo: %2\n"
 				 "Linha: %3\n"
 				 "%4"
 				 "Stacktrace:\n%5",
