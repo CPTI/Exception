@@ -229,12 +229,11 @@ namespace Log {
 			{ "Log: ", sizeof("Log: ") - 1 },
 			{ levelNames[level], strlen(levelNames[level]) },
 			{ " - ", sizeof(" - ") - 1 },
-			{ m_name.constData(), m_name.size() },
+			{ m_name.constData(), static_cast<size_t>(m_name.size()) },
 			{ ": ", sizeof(": ") -1 },
-			{ str, len },
+			{ str, static_cast<size_t>(len) },
 			{ "\n", sizeof("\n") -1 },
 		};
-
 
 		m_output->write(*this, level, vec, 7);
 	}
