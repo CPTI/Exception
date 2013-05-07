@@ -10,7 +10,7 @@ REGISTER_TEST_CLASS(BacktraceTest)
 #include <iostream>
 using namespace std;
 static const int STACK_DEPTH = 20;
-#ifdef __GNUC__
+#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
 // O asm é bom para esse teste porque impede o inline e a reodenacao
 #define GET_CURRENT_ADDR(var) __asm__ volatile ("1: mov $1b, %0" : "=r" (var));
 #else
