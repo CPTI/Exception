@@ -7,6 +7,7 @@
 
 #include <QDateTime>
 #include <QMessageBox>
+#include <QString>
 
 
 
@@ -93,6 +94,13 @@ Log::Logger& Error::errLog()
 	return log;
 }
 
+Error::t_abortCallback Error::s_abortCallback = NULL;
+
+void Error::setAbortCallback(t_abortCallback callback)
+{
+	s_abortCallback = callback;
+}
+
 void Error::abortPrivate(
 	const Software& software,
 	const char * abortFilename,
@@ -110,7 +118,12 @@ void Error::abortPrivate(
 				 abortFileLine,
 				 additionalInfo,
 				 Log::BT);
-	exit(1);
+
+	if (s_abortCallback){
+		(*s_abortCallback)(additionalInfo.toAscii().data());
+	}else{
+		exit(1);
+	}
 }
 
 

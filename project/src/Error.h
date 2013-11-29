@@ -247,6 +247,9 @@ public:
 
 	static const Software& mainSoftware();
 
+	typedef void (*t_abortCallback)(const char *info);
+	static void setAbortCallback( t_abortCallback callback );
+
 private:
 
 	/*! \brief Função que realmente aborta o programa levantando uma exceção AbortException.
@@ -264,6 +267,8 @@ private:
 
 	static Log::Logger& errLog();
 
+
+	static t_abortCallback s_abortCallback;
 	static const Software* s_mainSoftware;
 };
 
