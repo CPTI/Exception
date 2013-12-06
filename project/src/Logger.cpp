@@ -148,11 +148,11 @@ namespace Log {
 	}
 
 
-    Logger& LoggerFactory::getLogger(const QString& name, QString outputName) {
+    Logger& LoggerFactory::getLogger(const QString& name, QString outputName, bool colored) {
 		if (loggers().contains(name)) {
 			return *loggers()[name].data();
 		} else {
-            LoggerPtr ptr(new Logger(name, namedOutput(outputName), defaultLevel(), defaultExceptionLog()));
+            LoggerPtr ptr(new Logger(name, namedOutput(outputName, colored), defaultLevel(), defaultExceptionLog()));
 			loggers().insert(name, ptr);
 			return *ptr.data();
 		}
@@ -163,12 +163,12 @@ namespace Log {
 		defaultOutputPriv() = o;
 	}
 
-    void LoggerFactory::changeNamedOutput(const QSharedPointer<Output>& o, QString outputName)
+    void LoggerFactory::changeNamedOutput(const QSharedPointer<Output>& o, QString outputName, bool colored)
     {
         if (outputName == "stdout") {
-            namedOutputPriv("stdout") = o;
+            namedOutputPriv("stdout", colored) = o;
         } else {
-            namedOutputPriv("stderror") = o;
+            namedOutputPriv("stderror", colored) = o;
         }
     }
 
@@ -197,20 +197,30 @@ namespace Log {
 		return ptr;
 	}
 
-    LoggerFactory::OutputPtr LoggerFactory::namedOutput(QString name)
+    LoggerFactory::OutputPtr LoggerFactory::namedOutput(QString name, bool colored)
     {
-        return namedOutputPriv(name);
+        return namedOutputPriv(name, colored);
     }
 
-    LoggerFactory::OutputPtr& LoggerFactory::namedOutputPriv(QString name)
+    LoggerFactory::OutputPtr& LoggerFactory::namedOutputPriv(QString name, bool colored)
     {
 #ifdef LINUX
         if (name == "stdout") {
-            static OutputPtr ptr(ColoredStreamOutput::StdOut());
-            return ptr;
+            if ( colored ) {
+                static OutputPtr ptr(ColoredStreamOutput::StdOut());
+                return ptr;
+            } else {
+                static OutputPtr ptr(StreamOutput::StdOut());
+                return ptr;
+            }
         } else {
-            static OutputPtr ptr(ColoredStreamOutput::StdErr());
-            return ptr;
+            if ( colored ) {
+                static OutputPtr ptr(ColoredStreamOutput::StdErr());
+                return ptr;
+            } else {
+                static OutputPtr ptr(StreamOutput::StdErr());
+                return ptr;
+            }
         }
 #else
         if (name == "stdout") {

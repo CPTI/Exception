@@ -325,15 +325,15 @@ namespace Log {
 		typedef QMap<QString, LoggerPtr> LoggerMap;
 		typedef QSharedPointer<Output> OutputPtr;
 
-        static Logger& getLogger(const QString& name, QString outputName = "stderr");
+        static Logger& getLogger(const QString& name, QString outputName = "stderr", bool colored = true);
 
 		static void changeDefaultOutput(const OutputPtr& o);
 
-        static void changeNamedOutput(const QSharedPointer<Output>& o, QString outputName);
+        static void changeNamedOutput(const QSharedPointer<Output>& o, QString outputName, bool colored);
 
 		static OutputPtr defaultOutput();
 
-        static OutputPtr namedOutput(QString name);
+        static OutputPtr namedOutput(QString name, bool colored);
 
 		static void changeDefaultLevel(Level l);
 
@@ -349,7 +349,7 @@ namespace Log {
 
 		static OutputPtr& defaultOutputPriv();
 
-        static OutputPtr& namedOutputPriv(QString name);
+        static OutputPtr& namedOutputPriv(QString name, bool colored);
 
 		static Level& defaultLevelPriv();
 
