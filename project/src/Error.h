@@ -145,7 +145,7 @@ public:
 	 * por abrir o arquivo de log e registrar os sinais de exceção do
 	 * sistema.
 	 */
-	static void initialize(const Software& mainSoftware);
+    static void initialize(const Software& mainSoftware, QString outputName = "stderr");
 
 	/*! \brief Exibe um aviso de erro fatal, e aborta o programa.
 	 *
@@ -262,7 +262,7 @@ private:
 			//! Informações adicionais da falha.
 			const QString &additionalInfo);
 
-	static Log::Logger& errLog();
+    static Log::Logger& errLog(QString outputName = "stderr");
 
 	static const Software* s_mainSoftware;
 };

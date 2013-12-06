@@ -75,21 +75,21 @@ static void ERR_qtMessageOutput(QtMsgType type, const char * message)
 	}
 }
 
-void Error::initialize(const Software& mainSoftware)
+void Error::initialize(const Software& mainSoftware, QString outputName)
 {
 	s_mainSoftware = &mainSoftware;
 
 	// Instala o tratador de mensagens do Qt
 	qInstallMsgHandler(ERR_qtMessageOutput);
 
-	errLog().log(Log::LINFO, "============================================================");
-	errLog().log(Log::LINFO, "%1", mainSoftware);
-	errLog().log(Log::LINFO, "============================================================");
+    errLog(outputName).log(Log::LINFO, "============================================================");
+    errLog(outputName).log(Log::LINFO, "%1", mainSoftware);
+    errLog(outputName).log(Log::LINFO, "============================================================");
 }
 
-Log::Logger& Error::errLog()
+Log::Logger& Error::errLog(QString outputName)
 {
-	static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime");
+    static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime", outputName);
 	return log;
 }
 
