@@ -148,11 +148,11 @@ namespace Log {
 	}
 
 
-	Logger& LoggerFactory::getLogger(const QString& name) {
+    Logger& LoggerFactory::getLogger(const QString& name, QString outputName, bool colored) {
 		if (loggers().contains(name)) {
 			return *loggers()[name].data();
 		} else {
-			LoggerPtr ptr(new Logger(name, defaultOutput(), defaultLevel(), defaultExceptionLog()));
+            LoggerPtr ptr(new Logger(name, namedOutput(outputName, colored), defaultLevel(), defaultExceptionLog()));
 			loggers().insert(name, ptr);
 			return *ptr.data();
 		}
@@ -162,6 +162,15 @@ namespace Log {
 	{
 		defaultOutputPriv() = o;
 	}
+
+    void LoggerFactory::changeNamedOutput(const QSharedPointer<Output>& o, QString outputName, bool colored)
+    {
+        if (outputName == "stdout") {
+            namedOutputPriv("stdout", colored) = o;
+        } else {
+            namedOutputPriv("stderror", colored) = o;
+        }
+    }
 
 	LoggerFactory::OutputPtr LoggerFactory::defaultOutput()
 	{
@@ -187,6 +196,42 @@ namespace Log {
 #endif
 		return ptr;
 	}
+
+    LoggerFactory::OutputPtr LoggerFactory::namedOutput(QString name, bool colored)
+    {
+        return namedOutputPriv(name, colored);
+    }
+
+    LoggerFactory::OutputPtr& LoggerFactory::namedOutputPriv(QString name, bool colored)
+    {
+#ifdef LINUX
+        if (name == "stdout") {
+            if ( colored ) {
+                static OutputPtr ptr(ColoredStreamOutput::StdOut());
+                return ptr;
+            } else {
+                static OutputPtr ptr(StreamOutput::StdOut());
+                return ptr;
+            }
+        } else {
+            if ( colored ) {
+                static OutputPtr ptr(ColoredStreamOutput::StdErr());
+                return ptr;
+            } else {
+                static OutputPtr ptr(StreamOutput::StdErr());
+                return ptr;
+            }
+        }
+#else
+        if (name == "stdout") {
+            static OutputPtr ptr(StreamOutput::StdOut());
+            return ptr;
+        } else {
+            static OutputPtr ptr(StreamOutput::StdErr());
+            return ptr;
+        }
+#endif
+    }
 
 	Level& LoggerFactory::defaultLevelPriv()
 	{
@@ -221,7 +266,7 @@ namespace Log {
 		, m_output(defaultOutput)
 		, m_level(defaultLevel)
 		, m_exOpts(exOpts)
-	{}
+    {}
 
 	void Logger::output(Level level, const char* str, int len) {
 
