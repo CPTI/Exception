@@ -158,7 +158,7 @@ namespace Log {
 		}
 	}
 
-	void LoggerFactory::changeDefaultOutput(const QSharedPointer<Output>& o)
+	void LoggerFactory::changeDefaultOutput(OutputPtr o)
 	{
 		defaultOutputPriv() = o;
 	}
@@ -178,7 +178,7 @@ namespace Log {
 		return defaultLevelPriv();
 	}
 
-	LoggerFactory::OutputPtr& LoggerFactory::defaultOutputPriv()
+	LoggerFactory::OutputPtr LoggerFactory::defaultOutputPriv()
 	{
 #ifdef LINUX
 		static OutputPtr ptr(ColoredStreamOutput::StdErr());

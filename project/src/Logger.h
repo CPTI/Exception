@@ -159,12 +159,12 @@ namespace Log {
 		virtual ~SplitOutput() {}
 
 		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
-			foreach(const QSharedPointer<Output>& output, m_outputs) {
+			foreach(const QSharedPointer<Output> output, m_outputs) {
 				output->write(l, level, data, len);
 			}
 		}
 
-		void addOutput(const QSharedPointer<Output>& out) {
+		void addOutput(const QSharedPointer<Output> out) {
 			m_outputs.push_back(out);
 		}
 
@@ -184,7 +184,7 @@ namespace Log {
 			}
 		}
 
-		void setOutput(const QSharedPointer<Output>& out) {
+		void setOutput(const QSharedPointer<Output> out) {
 			m_output = out;
 		}
 
@@ -327,7 +327,7 @@ namespace Log {
 
 		static Logger& getLogger(const QString& name);
 
-		static void changeDefaultOutput(const OutputPtr& o);
+		static void changeDefaultOutput(const OutputPtr o);
 
 		static OutputPtr defaultOutput();
 
@@ -343,7 +343,7 @@ namespace Log {
 
 	private:
 
-		static OutputPtr& defaultOutputPriv();
+		static OutputPtr defaultOutputPriv();
 
 		static Level& defaultLevelPriv();
 
