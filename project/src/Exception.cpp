@@ -248,7 +248,7 @@ namespace ExceptionLib {
 #endif
 	}
 
-	void init(char *argv0)
+	void init(const char *argv0)
 	{
 		::Backtrace::initialize(argv0);
 		set_terminate(terminate_handler);
