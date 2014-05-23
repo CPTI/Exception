@@ -62,13 +62,15 @@ namespace Backtrace {
 						int line;
 
 						find(ctx, frames[i].addr, source, function, line);
-						frames[i].sourceFile = source;
-						frames[i].line = line;
+						if (function != ""){
+							frames[i].sourceFile = source;
+							frames[i].line = line;
 
-						if (!Demangling::demangle(function.c_str(), frames[i].function)) {
-							frames[i].function = function;
+							if (!Demangling::demangle(function.c_str(), frames[i].function)) {
+								frames[i].function = function;
+							}
+							SymbolCache::instance().updateCache(&frames[i], SymbolCache::SymbolsLoaded);
 						}
-						SymbolCache::instance().updateCache(&frames[i], SymbolCache::SymbolsLoaded);
 					}
 				}
 			}
