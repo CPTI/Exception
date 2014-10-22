@@ -152,6 +152,8 @@ namespace Log {
 		virtual ~Output() {}
 		// O unico requisito de write é que deve ser atomico
 		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) = 0;
+
+            virtual void flush() = 0;
 	};
 
 	class SplitOutput: public Output {
@@ -163,6 +165,12 @@ namespace Log {
 				output->write(l, level, data, len);
 			}
 		}
+
+            virtual void flush() {
+                foreach(const QSharedPointer<Output> output, m_outputs) {
+                    output->flush();
+                }
+            }
 
 		void addOutput(const QSharedPointer<Output> out) {
 			m_outputs.push_back(out);
@@ -184,6 +192,8 @@ namespace Log {
 			}
 		}
 
+        virtual void flush();
+
 		void setOutput(const QSharedPointer<Output> out) {
 			m_output = out;
 		}
@@ -203,6 +213,8 @@ namespace Log {
 
 		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
+        void flush() {}
+
 		static QSharedPointer<StreamOutput> StdErr();
 		static QSharedPointer<StreamOutput> StdOut();
 	private:
@@ -215,6 +227,8 @@ namespace Log {
 		virtual ~ColoredStreamOutput();
 
 		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
+
+        void flush() {}
 
 		static QSharedPointer<ColoredStreamOutput> StdErr();
 		static QSharedPointer<ColoredStreamOutput> StdOut();
@@ -307,6 +321,8 @@ namespace Log {
 
 		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
+        void flush() {}
+
 	private:
 
 		QMutex m_mutex;
@@ -365,6 +381,8 @@ namespace Log {
 		QString getName() const { return QString(m_name); }
 
 		Level getLevel() const { return m_level; }
+
+        void flush() { m_output->flush(); }
 
 		void changeLevel(Level l) { m_level = l; }
 
