@@ -24,6 +24,7 @@
 #include <QVector>
 
 #include "LoggerFwd.h"
+#include <stdio.h>
 
 namespace Log {
 
@@ -210,6 +211,7 @@ namespace Log {
 	class StreamOutput : public Output {
 	public:
 		StreamOutput(::std::FILE*  out);
+        ~StreamOutput();
 
 		void write(const Logger& l, Level level, VectorIO::out_elem* data, int len);
 
@@ -218,7 +220,7 @@ namespace Log {
 		static QSharedPointer<StreamOutput> StdErr();
 		static QSharedPointer<StreamOutput> StdOut();
 	private:
-		QFile m_file;
+        ::std::FILE* m_file;
 	};
 
 	class ColoredStreamOutput : public Output {
@@ -234,7 +236,7 @@ namespace Log {
 		static QSharedPointer<ColoredStreamOutput> StdOut();
 
 	private:
-		QFile m_file;
+        ::std::FILE* m_file;
 	};
 
 	/**

@@ -1,24 +1,29 @@
 #include "VectorIO.h"
 
-#include <QByteArray>
-#ifdef QT_NETWORK_LIB
-#include <QAbstractSocket>
-#endif
-#include <QFile>
-#include <QIODevice>
-
 #ifdef LINUX
 #include <sys/uio.h>
 #include <unistd.h>
 #endif
 
+#include <vector>
+#include <stdio.h>
+#include <string.h>
+
 namespace {
-	int fallback_write(QIODevice* dev, VectorIO::out_elem* data, size_t n) {
-		QByteArray bytes;
-		for (size_t i = 0; i < n; ++i) {
-			bytes.append(reinterpret_cast<const char*>(data[i].begin), data[i].size);
-		}
-		return dev->write(bytes);
+    int fallback_write(FILE* dev, VectorIO::out_elem* data, size_t n) {
+
+        size_t total = 0;
+        for (size_t i = 0; i < n; ++i) {
+            total += data[i].size;
+        }
+        std::vector<char> single_buffer(total);
+
+        size_t pos = 0;
+        for (size_t i = 0; i < n; ++i) {
+            memcpy(&single_buffer[pos], reinterpret_cast<const char*>(data[i].begin), data[i].size);
+            pos += data[i].size;
+        }
+        return fwrite(&single_buffer[0], 1, single_buffer.size(), dev);
 	}
 
 #ifdef LINUX
@@ -28,11 +33,18 @@ namespace {
 		// http://stackoverflow.com/questions/9336572/how-does-list-i-o-writev-internally-work
 
 		if (isatty(fd)) {
-			QByteArray bytes;
+            size_t total = 0;
+            for (size_t i = 0; i < n; ++i) {
+                total += data[i].size;
+            }
+            std::vector<char> single_buffer(total);
+
+            size_t pos = 0;
 			for (size_t i = 0; i < n; ++i) {
-				bytes.append(reinterpret_cast<const char*>(data[i].begin), data[i].size);
+                memcpy(&single_buffer[pos], reinterpret_cast<const char*>(data[i].begin), data[i].size);
+                pos += data[i].size;
 			}
-			return write(fd,bytes.data(), bytes.size());
+            return write(fd, &single_buffer[0], single_buffer.size());
 		} else {
 			// meu out_elem é binariamente igual ao iovec;
 			return writev(fd, reinterpret_cast<iovec*>(data), n);
@@ -44,27 +56,10 @@ namespace {
 
 namespace VectorIO
 {
-
-	int write_vec(QIODevice* dev, out_elem* data, size_t n)
-	{
-#ifdef LINUX
-		QFile* file = qobject_cast<QFile*>(dev);
-		if (file) {
-			return filedes_write(file->handle(), data, n);
-		}
-#ifdef QT_NETWORK_LIB
-		QAbstractSocket* socket = qobject_cast<QAbstractSocket*>(dev);
-		if (socket) {
-			return filedes_write(socket->socketDescriptor(), data, n);
-		}
-#endif
-#endif
-		return fallback_write(dev, data, n);
-	}
-
 	int write_vec(FILE* dev, out_elem* data, size_t n) {
-		QFile out;
-		out.open(dev, QIODevice::WriteOnly);
-		return write_vec(&out, data, n);
+#ifdef LINUX
+        return filedes_write(fileno(dev), data, n);
+#endif
+        return fallback_write(dev, data, n);
 	}
 }

@@ -14,7 +14,6 @@ namespace VectorIO
 		size_t size;
 	};
 
-	int write_vec(QIODevice* dev, out_elem* data, size_t n);
 	int write_vec(FILE* dev, out_elem* data, size_t n);
 }
 

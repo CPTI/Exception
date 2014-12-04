@@ -40,11 +40,15 @@ namespace Log {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
 		}
-		m_file.open(out, QIODevice::WriteOnly|QIODevice::Unbuffered);
+        m_file = out;
 	}
 
+    StreamOutput::~StreamOutput() {
+        fclose(m_file);
+    }
+
 	void StreamOutput::write(const Logger&, Level, VectorIO::out_elem* data, int len) {
-		VectorIO::write_vec(&m_file, data, len);
+        VectorIO::write_vec(m_file, data, len);
 	}
 
 	QSharedPointer<StreamOutput> StreamOutput::StdErr() {
@@ -58,8 +62,8 @@ namespace Log {
 	ColoredStreamOutput::ColoredStreamOutput(::std::FILE*  out) : m_file() {
 		if (out == NULL) {
 			throw Exception("Stream output received a null pointer");
-		}
-		m_file.open(out, QIODevice::WriteOnly|QIODevice::Unbuffered);
+        }
+        m_file = out;
 	}
 
 	static const char reset[] = "\x1b[0m";
@@ -78,7 +82,8 @@ namespace Log {
 			reinterpret_cast<const void*>(reset), sizeof(reset)-1
 		};
 
-		VectorIO::write_vec(&m_file, &epilogue, 1);
+        VectorIO::write_vec(m_file, &epilogue, 1);
+        fclose(m_file);
 	}
 
 	void ColoredStreamOutput::write(const Logger&, Level level, VectorIO::out_elem* data, int len) {
@@ -98,7 +103,7 @@ namespace Log {
 		out.insert(out.end(), data, data+len);
 		out.push_back(epilogue);
 
-		VectorIO::write_vec(&m_file, &out[0], out.size());
+        VectorIO::write_vec(m_file, &out[0], out.size());
 	}
 
 	QSharedPointer<ColoredStreamOutput> ColoredStreamOutput::StdErr() {
