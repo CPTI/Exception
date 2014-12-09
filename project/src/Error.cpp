@@ -90,7 +90,7 @@ void Error::initialize(const Software& mainSoftware, QString outputName)
 
 Log::Logger& Error::errLog(QString outputName)
 {
-    static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime", outputName);
+    static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime", outputName.toStdString());
 	return log;
 }
 

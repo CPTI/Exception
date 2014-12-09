@@ -3,12 +3,19 @@
 #include "Exception.h"
 #include "BackTrace.h"
 
-#include <QSharedPointer>
-#include <QStringBuilder>
 #include <VectorIO.h>
 #include <vector>
 #include <memory>
+
+#include <stdint.h>
+#include <sstream>
+
+#if __cplusplus >= 201103L
+#include <chrono>
+#elif defined QT_CORE_LIB
 #include <QDateTime>
+#endif
+
 
 static const char* levelNames[] = {
 	"ERROR ",
@@ -20,7 +27,17 @@ static const char* levelNames[] = {
 };
 
 namespace {
-	qint64 currentTimeMs() {
+
+#if __cplusplus >= 201103L
+
+int64_t currentTimeMs() {
+    auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+}
+
+#elif defined QT_CORE_LIB
+
+    int64_t currentTimeMs() {
 #if QT_VERSION >= 0x040700
 		return QDateTime::currentMSecsSinceEpoch();
 #else
@@ -28,7 +45,14 @@ namespace {
 		return dateTime.toTime_t() * 1000 + dateTime.time().msec();
 #endif
 	}
+#endif
 }
+
+#ifdef QT_CORE_LIB
+namespace string_format {
+    const QString adapt(const std::string& t) { return QString::fromStdString(t); }
+}
+#endif
 
 
 namespace Log {
@@ -51,12 +75,12 @@ namespace Log {
         VectorIO::write_vec(m_file, data, len);
 	}
 
-	QSharedPointer<StreamOutput> StreamOutput::StdErr() {
-		return QSharedPointer<StreamOutput>(new StreamOutput(stderr));
+    StreamOutput::stream_output_ptr StreamOutput::StdErr() {
+        return StreamOutput::stream_output_ptr(new StreamOutput(stderr));
 	}
 
-	QSharedPointer<StreamOutput> StreamOutput::StdOut() {
-		return QSharedPointer<StreamOutput>(new StreamOutput(stdout));
+    StreamOutput::stream_output_ptr StreamOutput::StdOut() {
+        return StreamOutput::stream_output_ptr(new StreamOutput(stdout));
 	}
 
 	ColoredStreamOutput::ColoredStreamOutput(::std::FILE*  out) : m_file() {
@@ -106,12 +130,12 @@ namespace Log {
         VectorIO::write_vec(m_file, &out[0], out.size());
 	}
 
-	QSharedPointer<ColoredStreamOutput> ColoredStreamOutput::StdErr() {
-		return QSharedPointer<ColoredStreamOutput>(new ColoredStreamOutput(stderr));
+    ColoredStreamOutput::stream_output_ptr ColoredStreamOutput::StdErr() {
+        return ColoredStreamOutput::stream_output_ptr(new ColoredStreamOutput(stderr));
 	}
 
-	QSharedPointer<ColoredStreamOutput> ColoredStreamOutput::StdOut() {
-		return QSharedPointer<ColoredStreamOutput>(new ColoredStreamOutput(stdout));
+    ColoredStreamOutput::stream_output_ptr ColoredStreamOutput::StdOut() {
+        return ColoredStreamOutput::stream_output_ptr(new ColoredStreamOutput(stdout));
 	}
 
 	LineBufferOutput::LineBufferOutput(int size)
@@ -142,7 +166,7 @@ namespace Log {
 		}
 		*out = '\0';
 
-		QMutexLocker lock(&m_mutex);
+        mutex_locker_t lock(locker_arg(m_mutex));
 		line.setLineId(++m_lastLine);
 
 		m_lines.push_back(line);
@@ -153,22 +177,33 @@ namespace Log {
 	}
 
 
-    Logger& LoggerFactory::getLogger(const QString& name, QString outputName, bool colored) {
-		if (loggers().contains(name)) {
-			return *loggers()[name].data();
+    Logger& LoggerFactory::getLogger(const std::string& name, std::string outputName, bool colored) {
+        if (loggers().find(name) != loggers().end()) {
+            return *loggers()[name];
 		} else {
             LoggerPtr ptr(new Logger(name, namedOutput(outputName, colored), defaultLevel(), defaultExceptionLog()));
-			loggers().insert(name, ptr);
-			return *ptr.data();
+            loggers().insert(LoggerMap::value_type(name, ptr));
+            return *ptr;
 		}
 	}
+
+    Logger& LoggerFactory::getLogger(const char* name, const char* outputName, bool colored) {
+        return getLogger(std::string(name), std::string(outputName), colored);
+    }
+
+#ifdef QT_CORE_LIB
+    Logger& LoggerFactory::getLogger(const QString& name, QString outputName, bool colored) {
+        return getLogger(name.toStdString(), outputName.toStdString(), colored);
+    }
+
+#endif
 
 	void LoggerFactory::changeDefaultOutput(OutputPtr o)
 	{
 		defaultOutputPriv() = o;
 	}
 
-    void LoggerFactory::changeNamedOutput(const QSharedPointer<Output>& o, QString outputName, bool colored)
+    void LoggerFactory::changeNamedOutput(const OutputPtr& o, std::string outputName, bool colored)
     {
         if (outputName == "stdout") {
             namedOutputPriv("stdout", colored) = o;
@@ -202,12 +237,12 @@ namespace Log {
 		return ptr;
 	}
 
-    LoggerFactory::OutputPtr LoggerFactory::namedOutput(QString name, bool colored)
+    LoggerFactory::OutputPtr LoggerFactory::namedOutput(std::string name, bool colored)
     {
         return namedOutputPriv(name, colored);
     }
 
-    LoggerFactory::OutputPtr& LoggerFactory::namedOutputPriv(QString name, bool colored)
+    LoggerFactory::OutputPtr& LoggerFactory::namedOutputPriv(std::string name, bool colored)
     {
 #ifdef LINUX
         if (name == "stdout") {
@@ -266,8 +301,8 @@ namespace Log {
 		return opts;
 	}
 
-	Logger::Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts exOpts)
-		: m_name(name.toUtf8())
+    Logger::Logger(std::string name, Logger::output_ptr defaultOutput, Level defaultLevel, ExceptOpts exOpts)
+        : m_name(name)
 		, m_output(defaultOutput)
 		, m_level(defaultLevel)
 		, m_exOpts(exOpts)
@@ -279,7 +314,7 @@ namespace Log {
 			{ "Log: ", sizeof("Log: ") - 1 },
 			{ levelNames[level], strlen(levelNames[level]) },
 			{ " - ", sizeof(" - ") - 1 },
-			{ m_name.constData(), static_cast<size_t>(m_name.size()) },
+            { m_name.c_str(), static_cast<size_t>(m_name.size()) },
 			{ ": ", sizeof(": ") -1 },
 			{ str, static_cast<size_t>(len) },
 			{ "\n", sizeof("\n") -1 },
@@ -293,26 +328,26 @@ namespace {
 
 #define MAX_NESTED 10
 
-	QString formatException(int depth, const std::exception& t, const Log::Logger* l) {
+    std::string formatException(int depth, const std::exception& t, const Log::Logger* l) {
 		using namespace Backtrace;
 
-		QString result;
+        std::stringstream result;
 
 		if (l->getExceptionOpts() >= Log::LOG_ST) {
 			size_t depth = 0;
 			const StackFrame* frames = ExceptionLib::getBT(t, &depth, (l->getExceptionOpts() >= Log::LOG_ST_DBG));
-			result = QString("%1:\n%2").arg(t.what()).arg(Backtrace::StackTrace::asString(depth, frames).c_str());
+            result << t.what() << ":\n" << Backtrace::StackTrace::asString(depth, frames);
 		} else {
-			result = QString("%1").arg(t.what());
+            result << t.what();
 		}
 
 		const ExceptionLib::Exception* ex = dynamic_cast<const ExceptionLib::Exception*>(&t);
 
 		if (ex && ex->nested() && depth < MAX_NESTED) {
-			result += "\nNested exception: \n" % formatException(depth+1, *ex->nested(), l);
+            result << "\nNested exception: \n" << formatException(depth+1, *ex->nested(), l);
 		}
 
-		return result;
+        return result.str();
 	}
 
 }
@@ -327,7 +362,7 @@ namespace Log {
 
 	Formatter<BTPlaceHolder>::ret_type Formatter<BTPlaceHolder>::format(const BTPlaceHolder& , const Log::Logger*)	{
 		std::auto_ptr<Backtrace::StackTrace> trace(Backtrace::trace());
-		return QString::fromStdString(trace->asString(true, 4 /* skip */));
+        return trace->asString(true, 4 /* skip */);
 	}
 
 	TimeMS NowMS;

@@ -17,11 +17,22 @@
 #include <string.h>
 #include <list>
 
+#if __cplusplus >= 201103L
+#include <str_conversion.h>
+#include <memory>
+#include <unordered_map>
+#include <mutex>
+#endif
+
+#if QT_CORE_LIB
 #include <QFile>
 #include <QList>
 #include <QMap>
 #include <QSharedPointer>
 #include <QVector>
+#include <QMutex>
+#include <QMutexLocker>
+#endif
 
 #include "LoggerFwd.h"
 #include <stdio.h>
@@ -43,6 +54,84 @@ namespace Log {
 		LOG_ST_DBG
 	};
 }
+
+namespace string_format {
+
+
+#if __cplusplus >= 201103L
+
+template <class... T>
+std::string format(const char* fmt, const T&... t) {
+    return std::move(fmt_str(fmt, t...));
+}
+
+#elif defined QT_CORE_LIB
+
+template<class T>
+const T& adapt(const T& t) { return t; }
+
+const QString adapt(const std::string& t);
+
+inline std::string format(const char* fmt) {
+    return std::string(fmt);
+}
+
+template <class T1>
+std::string format(const char* fmt, const T1& t1) {
+    return QString(fmt).arg(adapt(t1)).toStdString();
+}
+
+template <class T1, class T2>
+std::string format(const char* fmt, const T1& t1, const T2& t2) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).toStdString();
+}
+
+template <class T1, class T2, class T3>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5, class T6>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).arg(adapt(t6)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).arg(adapt(t6)).arg(adapt(t7)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).arg(adapt(t6)).arg(adapt(t7)).arg(adapt(t8)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).arg(adapt(t6)).arg(adapt(t7)).arg(adapt(t8)).arg(adapt(t9)).toStdString();
+}
+
+template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
+std::string format(const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10) {
+    return QString(fmt).arg(adapt(t1)).arg(adapt(t2)).arg(adapt(t3)).arg(adapt(t4)).arg(adapt(t5)).arg(adapt(t6)).arg(adapt(t7)).arg(adapt(t8)).arg(adapt(t9)).arg(adapt(t10))
+            .toStdString();
+}
+
+#endif
+
+
+}
+
 
 namespace Log {
 
@@ -72,13 +161,13 @@ namespace Log {
 
 	template<>
 	struct Formatter<std::exception> {
-		typedef QString ret_type;
+        typedef std::string ret_type;
 		static ret_type format(const std::exception& t, const Log::Logger* l);
 	};
 
 	template<>
 	struct Formatter<BTPlaceHolder> {
-		typedef QString ret_type;
+        typedef std::string ret_type;
 		static ret_type format(const BTPlaceHolder& , const Log::Logger* l);
 	};
 
@@ -104,6 +193,7 @@ namespace Log {
 		}
 	};
 
+
 	template<class T>
 	struct Formatter<std::vector<T> > : public IterableFormatter<std::vector<T> > {	};
 
@@ -111,12 +201,14 @@ namespace Log {
 	template<class T>
 	struct Formatter<std::list<T> > : public IterableFormatter<std::list<T> > {	};
 
+#ifdef  QT_CORE_LIB
 	template<class T>
 	struct Formatter<QVector<T> > : public IterableFormatter<QVector<T> > {	};
 
 
 	template<class T>
 	struct Formatter<QList<T> > : public IterableFormatter<QList<T> > {	};
+#endif
 
 #ifdef DEBUG
 	template<class T>
@@ -161,49 +253,62 @@ namespace Log {
 	public:
 		virtual ~SplitOutput() {}
 
-		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
-			foreach(const QSharedPointer<Output> output, m_outputs) {
-				output->write(l, level, data, len);
-			}
-		}
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<Output> output_ptr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<Output> output_ptr;
+#endif
 
-            virtual void flush() {
-                foreach(const QSharedPointer<Output> output, m_outputs) {
-                    output->flush();
-                }
+        virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
+            foreach(const output_ptr output, m_outputs) {
+                output->write(l, level, data, len);
             }
+        }
 
-		void addOutput(const QSharedPointer<Output> out) {
+        virtual void flush() {
+            foreach(const output_ptr output, m_outputs) {
+                output->flush();
+            }
+        }
+
+        void addOutput(const output_ptr out) {
 			m_outputs.push_back(out);
 		}
 
 	private:
-		svector<QSharedPointer<Output> > m_outputs;
+        svector<output_ptr > m_outputs;
 	};
 
 	class LevelFilter: public Output {
-	public:
+    public:
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<Output> output_ptr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<Output> output_ptr;
+#endif
 
-		LevelFilter(QSharedPointer<Output> out = QSharedPointer<Output>(), Level l = LINFO) : m_output(out), m_level(l) {}
+        LevelFilter(output_ptr out = output_ptr(), Level l = LINFO) : m_output(out), m_level(l) {}
+
+        void setOutput(const output_ptr out) {
+            m_output = out;
+        }
+
+
 		virtual ~LevelFilter() {}
 
 		virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
-			if (!m_output.isNull() && m_level >= level) {
+            if (m_output.operator->() != NULL && m_level >= level) {
 				m_output->write(l, level, data, len);
 			}
 		}
 
         virtual void flush();
 
-		void setOutput(const QSharedPointer<Output> out) {
-			m_output = out;
-		}
-
 		void setLevel(Level l) { m_level = l; }
 		Level getLevel() const { return m_level; }
 
 	private:
-		QSharedPointer<Output> m_output;
+        output_ptr m_output;
 		Level m_level;
 	};
 
@@ -217,8 +322,15 @@ namespace Log {
 
         void flush() {}
 
-		static QSharedPointer<StreamOutput> StdErr();
-		static QSharedPointer<StreamOutput> StdOut();
+
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<StreamOutput> stream_output_ptr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<StreamOutput> stream_output_ptr;
+#endif
+
+        static stream_output_ptr StdErr();
+        static stream_output_ptr StdOut();
 	private:
         ::std::FILE* m_file;
 	};
@@ -232,8 +344,14 @@ namespace Log {
 
         void flush() {}
 
-		static QSharedPointer<ColoredStreamOutput> StdErr();
-		static QSharedPointer<ColoredStreamOutput> StdOut();
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<ColoredStreamOutput> stream_output_ptr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<ColoredStreamOutput> stream_output_ptr;
+#endif
+
+        static stream_output_ptr StdErr();
+        static stream_output_ptr StdOut();
 
 	private:
         ::std::FILE* m_file;
@@ -256,6 +374,15 @@ namespace Log {
 	 *
 	 */
 	class LineBufferOutput: public Output {
+#if __cplusplus >= 201103L
+        typedef std::mutex mutex_t;
+        typedef std::lock_guard<std::mutex> mutex_locker_t;
+        inline mutex_t& locker_arg(mutex_t& m) {return m; }
+#elif defined QT_CORE_LIB
+        typedef QMutex mutex_t;
+        typedef QMutexLocker mutex_locker_t;
+        inline mutex_t* locker_arg(mutex_t& m) {return &m; }
+#endif
 	public:
 
 		class Line {
@@ -303,7 +430,7 @@ namespace Log {
 		 */
 		template<class Iterator>
 		int readN(size_t numLines, Iterator out) {
-			QMutexLocker lock(&m_mutex);
+            mutex_locker_t lock(locker_arg(m_mutex));
 			const int linesToRead = std::min(m_lines.size(), numLines);
 			std::copy(m_lines.begin(), m_lines.begin()+linesToRead, out);
 			return numLines;
@@ -312,7 +439,7 @@ namespace Log {
 		/** Extrai as N primeiras entradas*/
 		template<class Iterator>
 		int popN(size_t numLines, Iterator out) {
-			QMutexLocker lock(&m_mutex);
+            mutex_locker_t lock(locker_arg(m_mutex));
 			const int linesToRead = std::min(m_lines.size(), numLines);
 			std::copy(m_lines.begin(), m_lines.begin()+linesToRead, out);
 			return numLines;
@@ -327,7 +454,7 @@ namespace Log {
 
 	private:
 
-		QMutex m_mutex;
+        mutex_t m_mutex;
 		volatile int64_t m_lastLine;
 		const size_t m_maxSize;
 		std::deque<Line> m_lines;
@@ -339,19 +466,31 @@ namespace Log {
 	class LoggerFactory {
 	public:
 
-		typedef QSharedPointer<Logger> LoggerPtr;
-		typedef QMap<QString, LoggerPtr> LoggerMap;
-		typedef QSharedPointer<Output> OutputPtr;
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<Logger> LoggerPtr;
+        typedef std::unordered_map<std::string, LoggerPtr> LoggerMap;
+        typedef std::shared_ptr<Output> OutputPtr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<Logger> LoggerPtr;
+        typedef std::map<std::string, LoggerPtr> LoggerMap;
+        typedef QSharedPointer<Output> OutputPtr;
+#endif
 
+        static Logger& getLogger(const std::string& name, std::string outputName = "stderr", bool colored = true);
+
+        static Logger& getLogger(const char* name, const char* outputName = "stderr", bool colored = true);
+
+#ifdef QT_CORE_LIB
         static Logger& getLogger(const QString& name, QString outputName = "stderr", bool colored = true);
+#endif
 
 		static void changeDefaultOutput(const OutputPtr o);
 
-        static void changeNamedOutput(const QSharedPointer<Output>& o, QString outputName, bool colored);
+        static void changeNamedOutput(const OutputPtr& o, std::string outputName, bool colored);
 
 		static OutputPtr defaultOutput();
 
-        static OutputPtr namedOutput(QString name, bool colored);
+        static OutputPtr namedOutput(std::string name, bool colored);
 
 		static void changeDefaultLevel(Level l);
 
@@ -367,7 +506,7 @@ namespace Log {
 
 		static OutputPtr defaultOutputPriv();
 
-        static OutputPtr& namedOutputPriv(QString name, bool colored);
+        static OutputPtr& namedOutputPriv(std::string name, bool colored);
 
 		static Level& defaultLevelPriv();
 
@@ -379,8 +518,13 @@ namespace Log {
 	private:
 
 	public:
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<Output> output_ptr;
+#elif defined QT_CORE_LIB
+        typedef QSharedPointer<Output> output_ptr;
+#endif
 
-		QString getName() const { return QString(m_name); }
+        std::string getName() const { return m_name; }
 
 		Level getLevel() const { return m_level; }
 
@@ -388,9 +532,9 @@ namespace Log {
 
 		void changeLevel(Level l) { m_level = l; }
 
-		QSharedPointer<Output> getOuput() const { return m_output; }
+        output_ptr getOuput() const { return m_output; }
 
-		void changeNamedOutput(QSharedPointer<Output> o) { m_output = o; }
+        void changeNamedOutput(output_ptr o) { m_output = o; }
 
 		ExceptOpts getExceptionOpts() const { return m_exOpts; }
 
@@ -406,90 +550,90 @@ namespace Log {
 		template <class T1>
 		void log(Level l, const char* fmt, const T1& t1) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this), F<T6>::doIt(t6, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this), F<T6>::doIt(t6, this), F<T7>::doIt(t7, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this), F<T6>::doIt(t6, this), F<T7>::doIt(t7, this), F<T8>::doIt(t8, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this), F<T6>::doIt(t6, this), F<T7>::doIt(t7, this), F<T8>::doIt(t8, this), F<T9>::doIt(t9, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
 		template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10>
 		void log(Level l, const char* fmt, const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10) {
 			using namespace LogImpl;
-			if (m_level >= l) {
-				QByteArray utf8Data = QString(fmt).arg(F<T1>::doIt(t1, this)).arg(F<T2>::doIt(t2, this)).arg(F<T3>::doIt(t3, this)).arg(F<T4>::doIt(t4, this)).arg(F<T5>::doIt(t5, this)).arg(F<T6>::doIt(t6, this)).arg(F<T7>::doIt(t7, this)).arg(F<T8>::doIt(t8, this)).arg(F<T9>::doIt(t9, this)).arg(F<T10>::doIt(t10, this)).toUtf8();
-				output(l, utf8Data.constBegin(), utf8Data.size());
+            if (m_level >= l) {
+                std::string result = string_format::format(fmt, F<T1>::doIt(t1, this), F<T2>::doIt(t2, this), F<T3>::doIt(t3, this), F<T4>::doIt(t4, this), F<T5>::doIt(t5, this), F<T6>::doIt(t6, this), F<T7>::doIt(t7, this), F<T8>::doIt(t8, this), F<T9>::doIt(t9, this), F<T10>::doIt(t10, this));
+                output(l, result.c_str(), result.size());
 			}
 		}
 
@@ -497,11 +641,11 @@ namespace Log {
 		Logger(const Logger&);
 		Logger& operator=(const Logger&);
 
-		Logger(QString name, QSharedPointer<Output> defaultOutput, Level defaultLevel, ExceptOpts);
+        Logger(std::string name, output_ptr defaultOutput, Level defaultLevel, ExceptOpts);
 
-		QByteArray m_name;
+        std::string m_name;
 
-		QSharedPointer<Output> m_output;
+        output_ptr m_output;
 
 		Level m_level;
 

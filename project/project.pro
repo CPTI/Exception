@@ -22,6 +22,7 @@ HEADERS += \
         $$SRC/LoggerFwd.h \
         $$SRC/Software.h \
         $$SRC/StackAddressLoader.h \
+        $$SRC/str_conversion.h \
         $$SRC/svector.h \
         $$SRC/SymbolCache.h \
         $$SRC/VectorIO.h \
