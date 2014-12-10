@@ -5,10 +5,10 @@
 #include "Exception.h"
 #include "Logger.h"
 
-#include <QDateTime>
+#ifdef QT_CORE_LIB
 #include <QMessageBox>
 #include <QString>
-
+#endif
 
 
 #include <iostream>
@@ -36,17 +36,17 @@ const Software& Error::mainSoftware()
 namespace Log {
 	template<>
 	struct Formatter<Software> {
-		typedef QString ret_type;
-		static ret_type format(const Software& t, const Log::Logger*) {
-			return QString("Component: %1, version: %2, revision %3, compilation date: %4")
-					.arg(t.name())
-					.arg(t.version())
-					.arg(t.revision())
-					.arg(t.compilationDate());
+        typedef std::string ret_type;
+        static ret_type format(const Software& t, const Log::Logger*) {
+            return string_format::format("Component: %1, version: %2, revision %3, compilation date: %4",
+                    t.name(),
+                    t.version(),
+                    t.revision(),
+                    t.compilationDate());
 		}
 	};
 }
-
+#ifdef QT_CORE_LIB
 static void ERR_qtMessageOutput(QtMsgType type, const char * message)
 {
 	static Log::Logger& logger = Log::LoggerFactory::getLogger("Qt log");
@@ -76,25 +76,34 @@ static void ERR_qtMessageOutput(QtMsgType type, const char * message)
 		}
 	}
 }
-
-void Error::initialize(const Software& mainSoftware, QString outputName)
+#endif
+void Error::initialize(const Software& mainSoftware, std::string outputName)
 {
 	s_mainSoftware = &mainSoftware;
-
+#ifdef QT_CORE_LIB
 	// Instala o tratador de mensagens do Qt
 	qInstallMsgHandler(ERR_qtMessageOutput);
-
+#endif
     errLog(outputName).log(Log::LINFO, "============================================================");
     errLog(outputName).log(Log::LINFO, "%1", mainSoftware);
     errLog(outputName).log(Log::LINFO, "============================================================");
 }
 
-Log::Logger& Error::errLog(QString outputName)
+Log::Logger& Error::errLog(std::string outputName)
 {
-    static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime", outputName.toStdString());
+    static Log::Logger& log = Log::LoggerFactory::getLogger("Runtime", outputName);
 	return log;
 }
-
+Log::Logger& Error::errLog(const char* outputName)
+{
+    return errLog(std::string(outputName));
+}
+#ifdef QT_CORE_LIB
+Log::Logger& Error::errLog(QString outputName)
+{
+    return errLog(outputName.toStdString());
+}
+#endif
 Error::t_abortCallback Error::s_abortCallback = NULL;
 
 void Error::setAbortCallback(t_abortCallback callback)

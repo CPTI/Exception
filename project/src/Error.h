@@ -9,13 +9,14 @@
 #include "LoggerFwd.h"
 #include <stddef.h>
 
+#ifdef QT_CORE_LIB
 #include <QObject>
 
 
 class QFile;
 class QMutex;
 class QString;
-
+#endif
 
 // Macros
 #define ERR_ABORT(software, message) \
@@ -145,7 +146,7 @@ public:
 	 * por abrir o arquivo de log e registrar os sinais de exceção do
 	 * sistema.
 	 */
-    static void initialize(const Software& mainSoftware, QString outputName = "stderr");
+    static void initialize(const Software& mainSoftware, std::string outputName = "stderr");
 
 	/*! \brief Exibe um aviso de erro fatal, e aborta o programa.
 	 *
@@ -297,8 +298,11 @@ private:
 			//! Informações adicionais da falha.
             const std::string &additionalInfo);
 
-    static Log::Logger& errLog(QString outputName = "stderr");
-
+    static Log::Logger& errLog(std::string outputName);
+    static Log::Logger& errLog(const char* outputName = "stderr");
+#ifdef QT_CORE_LIB
+    static Log::Logger& errLog(QString outputName);
+#endif
 
 	static t_abortCallback s_abortCallback;
 	static const Software* s_mainSoftware;
