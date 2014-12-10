@@ -3,6 +3,7 @@
 
 #ifndef SVECTOR_H
 #define SVECTOR_H
+#include "string_format.h"
 
 
 #if defined(DEBUG) && !defined(__4WIN__)
@@ -19,20 +20,16 @@ public:
 	:
 	std::vector<T>(__n, __value) {}
 
-	T &operator[](size_t n) {
+    T &operator[](size_t n) {
 		ERR_ASSERT_MESSAGE(Error::mainSoftware(),
 				n < std::vector<T>::size(),
-				QString("operator [] | n = %1 | size = %2")
-					.arg(n)
-					.arg(std::vector<T>::size()));
+                string_format::format("operator [] | n = %1 | size = %2", n, std::vector<T>::size()));
 		return static_cast<std::vector<T> &>(*this)[n];
 	}
 	const T &operator[](size_t n) const {
 		ERR_ASSERT_MESSAGE(Error::mainSoftware(),
 				n < std::vector<T>::size(),
-				QString("operator [] | n = %1 | size = %2")
-					.arg(n)
-					.arg(std::vector<T>::size()));
+                string_format::format("operator [] | n = %1 | size = %2", n, std::vector<T>::size()));
 		return static_cast<const std::vector<T> &>(*this)[n];
 	}
 };

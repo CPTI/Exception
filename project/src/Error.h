@@ -159,8 +159,24 @@ public:
 			//! Resultado da macro __LINE__.
 			unsigned int abortFileLine,
 			//! Mensagem que será exibida.
-			QString message);
-
+            std::string message);
+    static void abort(
+            const Software& software,
+            //! Resultado da macro __FILE__.
+            const char *abortFilename,
+            //! Resultado da macro __LINE__.
+            unsigned int abortFileLine,
+            //! Mensagem que será exibida.
+            const char* message);
+#ifdef QT_CORE_LIB
+    static void abort(
+            const Software& software,
+            //! Resultado da macro __FILE__.
+            const char *abortFilename,
+            //! Resultado da macro __LINE__.
+            unsigned int abortFileLine,
+            //! Mensagem que será exibida.
+            QString message);
 	/*! \brief Exibe um popup com a mensagem passada como prâmetro.
 	 *
 	 * @param	message	Mensagem que será exibida.
@@ -222,6 +238,7 @@ public:
 			const char *abortFileName,
 			//! Resultado da macro __LINE__.
 			unsigned int abortFileline);
+#endif
 
 	/*! \brief Aborta.
 	 *
@@ -235,14 +252,29 @@ public:
 			const char *expressionAsString,
 			const char *abortFilename,
 			unsigned int abortFileLine,
-			QString message = QString::null);
+            std::string message);
+    static void assertFailed(
+            const Software& software,
+            const char *expressionAsString,
+            const char *abortFilename,
+            unsigned int abortFileLine,
+            const char* message = "");
+#ifdef QT_CORE_LIB
+    static void assertFailed(
+            const Software& software,
+            const char *expressionAsString,
+            const char *abortFilename,
+            unsigned int abortFileLine,
+            QString message);
+#endif
 #else
+    template<class T>
 	static void assertFailed(
 			const Software&,
 			const char *,
 			const char *,
 			unsigned int,
-			QString) {}
+            T) {}
 #endif
 
 	static const Software& mainSoftware();
@@ -263,7 +295,7 @@ private:
 			//! Resultado da macro __LINE__.
 			unsigned int abortFileLine,
 			//! Informações adicionais da falha.
-			const QString &additionalInfo);
+            const std::string &additionalInfo);
 
     static Log::Logger& errLog(QString outputName = "stderr");
 

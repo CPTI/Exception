@@ -14,6 +14,7 @@
 #include <iostream>
 #include <signal.h>
 #include <time.h>
+#include <sstream>
 
 #ifndef __4WIN__
 	#include <execinfo.h>
@@ -105,12 +106,12 @@ void Error::abortPrivate(
 	const Software& software,
 	const char * abortFilename,
 	unsigned int abortFileLine,
-	const QString & additionalInfo)
+    const std::string & additionalInfo)
 {
-	errLog().log(Log::LERROR, "ERRO FATAL - O programa será abortado.\n"
+    errLog().log(Log::LERROR, "FATAL ERROR - The program will be aborted.\n"
 				 "%1\n"
-				 "Arquivo: %2\n"
-				 "Linha: %3\n"
+                 "File: %2\n"
+                 "Line: %3\n"
 				 "%4"
 				 "Stacktrace:\n%5",
 				 software,
@@ -120,7 +121,7 @@ void Error::abortPrivate(
 				 Log::BT);
 
 	if (s_abortCallback){
-		(*s_abortCallback)(additionalInfo.toAscii().data());
+        (*s_abortCallback)(additionalInfo.c_str());
 	}else{
 		exit(1);
 	}
@@ -131,12 +132,30 @@ void Error::abort(
 	const Software& software,
 	const char * abortFilename,
 	unsigned int abortFileLine,
-	QString message)
+    std::string message)
 {
-	QString additionalInfo = QString(
-		"Mensagem: %1\n")
-		.arg(message);
-	abortPrivate(software, abortFilename, abortFileLine, additionalInfo);
+    std::stringstream ss;
+    ss << "Message: " << message << "\n";
+    abortPrivate(software, abortFilename, abortFileLine, ss.str());
+}
+
+void Error::abort(
+    const Software& software,
+    const char * abortFilename,
+    unsigned int abortFileLine,
+    const char* message)
+{
+    abort(software, abortFilename, abortFileLine, std::string(message));
+}
+
+#ifdef QT_CORE_LIB
+void Error::abort(
+    const Software& software,
+    const char * abortFilename,
+    unsigned int abortFileLine,
+    QString message)
+{
+    abort(software, abortFilename, abortFileLine, message.toStdString());
 }
 
 void Error::info(
@@ -144,7 +163,7 @@ void Error::info(
 {
 	QMessageBox::information(
 		NULL,
-		"INFORMAÇÃO",
+        "INFORMAÇÃO",
 		message,
 		QMessageBox::Ok);
 }
@@ -156,11 +175,10 @@ void Error::warn(
 	errLog().log(Log::LWARN, "%1. %2", software, message);
 	QMessageBox::warning(
 		NULL,
-		"AVISO",
+        "AVISO",
 		message,
 		QMessageBox::Ok);
 }
-
 
 
 void Error::connect(
@@ -188,7 +206,7 @@ void Error::connect(
 			.arg(receiverAsString)
 			.arg(slot + 1)
 			.arg(connectionType);
-		abortPrivate(software, abortFileName, abortFileline, additionalInfo);
+        abortPrivate(software, abortFileName, abortFileline, additionalInfo.toStdString());
 	}
 }
 
@@ -215,9 +233,10 @@ void Error::disconnect(
 			.arg(signal + 1)
 			.arg(receiverAsString)
 			.arg(slot + 1);
-		abortPrivate(software, abortFileName, abortFileline, additionalInfo);
+        abortPrivate(software, abortFileName, abortFileline, additionalInfo.toStdString());
 	}
 }
+#endif
 
 
 #ifdef DEBUG
@@ -226,24 +245,46 @@ void Error::assertFailed(
 		const char * expressionAsString,
 		const char * abortFileName,
 		unsigned int abortFileline,
-		QString message)
+        std::string message)
 {
-	QString additionalInfo = QString(
-		"Assertiva não satisfeita: %1\n")
-		.arg(expressionAsString);
+    std::stringstream additionalInfo;
+    additionalInfo << "Assertion not satisfied: " << expressionAsString << "\n";
 
-	if(message != QString::null) {
-		additionalInfo.append(QString(
-			"Mensagem: %1\n")
-			.arg(message));
+
+    if(!message.empty()) {
+        additionalInfo << "Mensagem: " << message << "\n";
 	}
 
 	abortPrivate(
 				software,
 				abortFileName,
 				abortFileline,
-				additionalInfo);
+                additionalInfo.str());
 }
+
+
+void Error::assertFailed(
+        const Software& software,
+        const char * expressionAsString,
+        const char * abortFileName,
+        unsigned int abortFileline,
+        const char* message)
+{
+    assertFailed(software, expressionAsString, abortFileName, abortFileline, std::string(message));
+}
+
+#ifdef QT_CORE_LIB
+void Error::assertFailed(
+        const Software& software,
+        const char * expressionAsString,
+        const char * abortFileName,
+        unsigned int abortFileline,
+        QString message)
+{
+    assertFailed(software, expressionAsString, abortFileName, abortFileline, message.toStdString());
+}
+#endif
+
 #endif
 
 

@@ -23,6 +23,7 @@ HEADERS += \
         $$SRC/Software.h \
         $$SRC/StackAddressLoader.h \
         $$SRC/str_conversion.h \
+        $$SRC/string_format.h \
         $$SRC/svector.h \
         $$SRC/SymbolCache.h \
         $$SRC/VectorIO.h \
@@ -33,6 +34,7 @@ SOURCES += \
         $$SRC/Error.cpp \
         $$SRC/Exception.cpp \
         $$SRC/Logger.cpp \
+        $$SRC/string_format.cpp \
         $$SRC/SymbolCache.cpp \
         $$SRC/VectorIO.cpp \
 
