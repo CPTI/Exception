@@ -4,9 +4,6 @@
 #include <stddef.h>
 #include <stdio.h>
 
-
-class QIODevice;
-
 namespace VectorIO
 {
 	struct out_elem {
