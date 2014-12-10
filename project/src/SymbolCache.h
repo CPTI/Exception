@@ -3,8 +3,15 @@
 
 #include "BackTrace.h"
 
-#include <QHash>
-#include <QReadWriteLock>
+
+#if __cplusplus >= 201103L
+    #include <unordered_map>
+    #include <mutex>
+#elif defined QT_CORE_LIB
+    #include <QHash>
+    #include <QReadWriteLock>
+#endif
+
 
 namespace BacktracePrivate {
 	using namespace Backtrace;
@@ -35,10 +42,25 @@ namespace BacktracePrivate {
 	private:
 		SymbolCache();
 
-		typedef QHash<void*, CachedFrame> Cache;
+#if __cplusplus >= 201103L
+        typedef std::unordered_map<void*, CachedFrame> Cache;
+        // we'll have to wait for c++14 to use de shared_timed_mutex for read and write locks
+        typedef std::mutex lock_t;
+        struct Locker {
+            std::lock_guard<lock_t> guard;
+            Locker(lock_t* l) : guard(*l) {}
+        };
+        typedef Locker read_locker_t;
+        typedef Locker write_locker_t;
+#elif defined QT_CORE_LIB
+        typedef QHash<void*, CachedFrame> Cache;
+        typedef QReadWriteLock lock_t;
+        typedef QReadLocker read_locker_t;
+        typedef QReadLocker write_locker_t;
+#endif
 
 		Cache m_cache;
-		mutable QReadWriteLock m_lock;
+        mutable lock_t m_lock;
 	};
 
 }

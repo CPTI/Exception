@@ -15,17 +15,21 @@ namespace BacktracePrivate {
 
 	const SymbolCache::CachedFrame* SymbolCache::cachedFor(void* address) const {
 
-		QReadLocker locker(&m_lock);
+        read_locker_t locker(&m_lock);
 		Cache::const_iterator it = m_cache.find(address);
 		if (it == m_cache.end()) {
 			return NULL;
 		} else {
-			return &(*it);
+#if __cplusplus >= 201103L
+            return &(it->second);
+#elif defined QT_CORE_LIB
+            return &(*it);
+#endif
 		}
 	}
 
 	void SymbolCache::updateCache(StackFrame* frame, CacheState state) {
-		QWriteLocker locker(&m_lock);
+        write_locker_t locker(&m_lock);
 		CachedFrame& cframe = m_cache[frame->addr];
 
 		if (state > cframe.state) {
