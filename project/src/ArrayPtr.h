@@ -3,11 +3,17 @@
 
 #include <algorithm>
 #include <stddef.h>
-#include <QAtomicInt>
+
 #include "Typelist.h"
 #include "TypelistMacros.h"
 #include "TypeManip.h"
 
+
+#if __cplusplus >= 201103L
+        #include <atomic>
+#elif defined QT_CORE_LIB
+        #include <QAtomicInt>
+#endif
 
 namespace ArrayPrivate {
 	template<typename T>
@@ -156,19 +162,33 @@ namespace ArrayPrivate {
 	template<class T>
 	struct alloc_count<T, true> {
 
-		struct buffer_header {
-			QAtomicInt count;
+        struct buffer_header {
+#if __cplusplus >= 201103L
+            std::atomic_int count;
+#elif defined QT_CORE_LIB
+            QAtomicInt count;
+#endif
 			size_t size;
+
+            buffer_header(): count(0), size(0) {}
 		};
 
 		static void incrementCount(T* t) {
 			buffer_header* header = reinterpret_cast<buffer_header*>(t) - 1;
-			header->count.ref();
+#if __cplusplus >= 201103L
+            ++header->count;
+#elif defined QT_CORE_LIB
+            header->count.ref();
+#endif
 		}
 
 		static bool decrementCount(T* t) {
 			buffer_header* header = reinterpret_cast<buffer_header*>(t) - 1;
-			return !header->count.deref();
+#if __cplusplus >= 201103L
+            return --header->count == 0;
+#elif defined QT_CORE_LIB
+            return !header->count.deref();
+#endif
 		}
 	};
 

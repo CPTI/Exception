@@ -72,12 +72,13 @@ private:
 	friend void std::swap<>(NotNull<T>&, NotNull<T>&);
 };
 
+#ifdef QT_CORE_LIB
 //! Overload da funcao qHash que repassa para o qHash de ponteiro
 template <class T> inline uint qHash(const NotNull<T>& n)
 {
 	return qHash(n.ptr());
 }
-
+#endif
 
 namespace std {
 	/**
