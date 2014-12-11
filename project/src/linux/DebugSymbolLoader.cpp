@@ -17,9 +17,9 @@
 #include <fstream>
 #include <memory>
 #include <ext/stdio_filebuf.h>
-
+#ifdef QT_CORE_LIB
 #include <QThreadStorage>
-
+#endif
 using namespace std;
 
 namespace {
@@ -254,7 +254,13 @@ namespace Backtrace {
 		}
 	};
 
-
+#if __cplusplus >= 201103L
+    IDebugSymbolLoader& getPlatformDebugSymbolLoader()
+    {
+        static thread_local Addr2LineSymbolLoader storage;
+        return storage;
+    }
+#elif defined QT_CORE_LIB
 	IDebugSymbolLoader& getPlatformDebugSymbolLoader()
 	{
 		static QThreadStorage<Addr2LineSymbolLoader*> storage;
@@ -264,6 +270,7 @@ namespace Backtrace {
 		}
 		return *storage.localData();
 	}
+#endif
 
 	void initializeExecutablePath(const char* argv0) {
 		Finder finder;
