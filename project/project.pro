@@ -1,7 +1,6 @@
 TARGET = exception
 
 !include(../../pri/setup.pri) { error("Erro incluindo o subrepo pri -- $$TARGET") }
-!include(../../type_utils/setup.pri) { subrepoErrorMessage(type_utils) }
 
 TEMPLATE = lib
 CONFIG += static
@@ -27,6 +26,16 @@ HEADERS += \
         $$SRC/svector.h \
         $$SRC/SymbolCache.h \
         $$SRC/VectorIO.h \
+        $$SRC/MapUtils.h \
+        $$SRC/VectorOf.h \
+        $$SRC/ArrayPtr.h \
+        $$SRC/NullType.h \
+        $$SRC/ScopeGuard.h \
+        $$SRC/Typelist.h \
+        $$SRC/TypeManip.h \
+        $$SRC/TypelistMacros.h \
+        $$SRC/NotNull.h \
+
 
 SOURCES += \
         $$SRC/BackTracePlatIndep.cpp \
