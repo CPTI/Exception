@@ -8,6 +8,7 @@
 #include "Software.h"
 #include "LoggerFwd.h"
 #include <stddef.h>
+#include <string>
 
 #ifdef QT_CORE_LIB
 #include <QObject>

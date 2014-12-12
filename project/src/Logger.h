@@ -17,6 +17,7 @@
 #include <string>
 #include <string.h>
 #include <list>
+#include <stdint.h>
 
 #if __cplusplus >= 201103L
 #include <memory>
@@ -65,8 +66,8 @@ namespace Log {
 	extern BTPlaceHolder BT;
 
 	struct TimeMS {
-		TimeMS(qint64 relativeTo = 0) : m_rel(relativeTo) {}
-		qint64 m_rel;
+        TimeMS(int64_t relativeTo = 0) : m_rel(relativeTo) {}
+        int64_t m_rel;
 	};
 
 	extern TimeMS NowMS;
@@ -97,23 +98,24 @@ namespace Log {
 
 	template<>
 	struct Formatter<TimeMS> {
-		typedef qint64 ret_type;
+        typedef int64_t ret_type;
 		static ret_type format(const TimeMS& , const Log::Logger* l);
 	};
 
 	template<class V>
 	struct IterableFormatter {
-		typedef QString ret_type;
+        typedef std::string ret_type;
 		static ret_type format(const V& v, const Log::Logger*) {
-			QString ret = "[";
+            std::stringstream ss;
+            ss << "[";
 			bool first = true;
 			for (typename V::const_iterator it = v.begin(); it != v.end(); ++it) {
-				if (!first) { ret += ", "; }
-				ret += QString("%1").arg(*it);
+                if (!first) { ss << ", "; }
+                ss << *it;
 				first = false;
 			}
-			ret += "]";
-			return ret;
+            ss << "]";
+            return ss.str();
 		}
 	};
 
