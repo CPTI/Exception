@@ -18,6 +18,7 @@
 #include <string.h>
 #include <list>
 #include <stdint.h>
+#include <sstream>
 
 #if __cplusplus >= 201103L
 #include <memory>
