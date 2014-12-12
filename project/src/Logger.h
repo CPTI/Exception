@@ -186,13 +186,17 @@ namespace Log {
 #endif
 
         virtual void write(const Logger& l, Level level, VectorIO::out_elem* data, int len) {
-            foreach(const output_ptr output, m_outputs) {
+            svector<output_ptr >::iterator it = m_outputs.begin(), end = m_outputs.end();
+            for(; it != end; ++it) {
+                const output_ptr output = *it;
                 output->write(l, level, data, len);
             }
         }
 
         virtual void flush() {
-            foreach(const output_ptr output, m_outputs) {
+            svector<output_ptr >::iterator it = m_outputs.begin(), end = m_outputs.end();
+            for(; it != end; ++it) {
+                const output_ptr output = *it;
                 output->flush();
             }
         }
