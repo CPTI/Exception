@@ -8,8 +8,12 @@
 #include <map>
 #include <vector>
 
-// TODO: substituir por std::mutex quando existir
+#if __cplusplus >= 201103L
+#include <mutex>
+#elif defined QT_CORE_LIB
 #include <QMutex>
+#include <QMutexLocker>
+#endif
 
 #include "Demangling.h"
 
@@ -30,6 +34,16 @@ namespace Backtrace {
 		};
 
 		typedef std::map<string, BFD_context> context_map;
+#if __cplusplus >= 201103L
+        typedef std::mutex mutex_t;
+        struct mutex_locker_t {
+            std::lock_guard<mutex_t> guard;
+            mutex_locker_t(mutex_t* l) : guard(*l) {}
+        };
+#elif defined QT_CORE_LIB
+        typedef QMutex mutex_t;
+        typedef QMutexLocker mutex_locker_t;
+#endif
 	public:
 
 		BFDSymbolLoader()
@@ -79,10 +93,10 @@ namespace Backtrace {
 
 	private:
 		context_map m_contexts;
-        QMutex m_mutex;
+        mutex_t m_mutex;
 
 		BFD_context& getBFD(const std::string& moduleName) {
-            QMutexLocker locker(&m_mutex);
+            mutex_locker_t locker(&m_mutex);
 			context_map::iterator it = m_contexts.find(moduleName);
 			if (it != m_contexts.end()) {
 				return it->second;
