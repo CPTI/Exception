@@ -45,13 +45,13 @@ IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 		src/windows/BackTrace.cpp
 	)
 	IF(CMAKE_COMPILER_IS_GNUCXX)
-		SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--wrap,__cxa_throw -Wl,--wrap,__cxa_bad_cast") 
+		SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CONF_LINKER_FLAGS}") 
 		SET(LIBS bfd iberty)
 	ELSE()
 		SET(LIBS imagehlp.lib)
 	ENDIF()
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--wrap,__cxa_throw -Wl,--wrap,__cxa_bad_cast") 
+	SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CONF_LINKER_FLAGS}") 
 	SET(SOURCES ${SOURCES}
 		src/linux/BackTrace.cpp
 		src/linux/StackLoader.cpp
@@ -70,16 +70,17 @@ ELSE()
 	)
 ENDIF()
 
-SET(LIBNAME exception)
-IF(BUILD_QT)
+IF(BUILD_QT OR SUPPORT_QT)
 SET(LIBS ${LIBS} ${QT_LIBRARIES})
-SET(LIBNAME exception_qt)
 ENDIF()
 
-add_library(${LIBNAME} SHARED ${HEADERS} ${SOURCES})
-target_link_libraries(${LIBNAME} ${LIBS})
+add_library(exception SHARED ${HEADERS} ${SOURCES})
+target_link_libraries(exception ${LIBS})
+export(TARGETS exception FILE "${PROJECT_BINARY_DIR}/ExceptionTargets.cmake")
+install(EXPORT ExceptionTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-install(TARGETS ${LIBNAME} LIBRARY DESTINATION "lib${LIBSUFFIX}")
-install(DIRECTORY src/ DESTINATION include/exception FILES_MATCHING PATTERN "*.h")
+install(TARGETS exception EXPORT ExceptionTargets LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+install(DIRECTORY src/ DESTINATION "${INSTALL_INCLUDE_DIR}/exception" FILES_MATCHING PATTERN "*.h")
 ENDIF()

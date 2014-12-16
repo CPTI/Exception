@@ -1,0 +1,11 @@
+# Compute paths
+get_filename_component(EXCEPTION_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(EXCEPTION_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+set(EXCEPTION_LINKER_FLAGS "@CONF_LINKER_FLAGS@") 
+set(EXCEPTION_CONF "@CONF_BUILD_CONF@") 
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${EXCEPTION_CMAKE_DIR}/ExceptionTargets.cmake")
+ 
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(EXCEPTION_LIBRARIES exception)
