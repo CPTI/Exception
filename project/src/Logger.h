@@ -568,6 +568,7 @@ namespace Log {
 			}
 		}
 
+        void output(Level level, const char* str, int len);
 	private:
 		Logger(const Logger&);
 		Logger& operator=(const Logger&);
@@ -584,7 +585,6 @@ namespace Log {
 
 		friend class LoggerFactory;
 
-		void output(Level level, const char* str, int len);
 	};
 }
 
