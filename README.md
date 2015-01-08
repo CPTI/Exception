@@ -19,8 +19,8 @@ There are two build systems here, one based on qmake and cmake. The qmake system
 only used internally at CPTI, where the library orinated as a submodule. It is recommended
 to use the cmake build:
 
-#> mkdir build
-#> cd build
-#> cmake path_to_source -DCMAKE_INSTALL_PREFIX=/usr
-#> make
-#> make install
+    #> mkdir build
+    #> cd build
+    #> cmake path_to_source -DCMAKE_INSTALL_PREFIX=/usr
+    #> make
+    #> make install
