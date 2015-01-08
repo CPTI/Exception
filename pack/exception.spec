@@ -1,5 +1,5 @@
 Name:		exception
-Version:	0.1
+Version:	0.2
 Release:	1%{?dist}
 Summary:	A debugging instrumentation and logging library for C++11
 
@@ -87,3 +87,5 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Tue Dec 16 2014 Maximilien de Bayser <maxdebayser@gmail.com> 0.1
 - Package first created 
+* Thu Jan 08 2015 Maximilien de Bayser <maxdebayser@gmail.com> 0.1
+- Small fix
