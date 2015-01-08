@@ -85,7 +85,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/exception/*.h
 
 %changelog
-* Tue Dec 16 2014 Maximilien de Bayser <maxdebayser@gmail.com> 0.1
-- Package first created 
 * Thu Jan 08 2015 Maximilien de Bayser <maxdebayser@gmail.com> 0.1
 - Small fix
+* Tue Dec 16 2014 Maximilien de Bayser <maxdebayser@gmail.com> 0.1
+- Package first created 
