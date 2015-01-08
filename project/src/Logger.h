@@ -233,9 +233,7 @@ namespace Log {
 			}
 		}
 
-        virtual void flush();
-
-		void setLevel(Level l) { m_level = l; }
+        void setLevel(Level l) { m_level = l; }
 		Level getLevel() const { return m_level; }
 
 	private:
