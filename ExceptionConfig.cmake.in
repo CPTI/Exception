@@ -9,3 +9,5 @@ include("${EXCEPTION_CMAKE_DIR}/ExceptionTargets.cmake")
  
 # These are IMPORTED targets created by FooBarTargets.cmake
 set(EXCEPTION_LIBRARIES exception)
+
+@QT_CONF@
