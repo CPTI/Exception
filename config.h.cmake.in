@@ -1,0 +1,7 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+@USE_DEFINITION@
+@SUPPORT_DEFINITION@
+
+#endif /* CONFIG_H */

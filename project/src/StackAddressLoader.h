@@ -2,6 +2,7 @@
 #define ISTACKADDRESSLOADER_H
 
 #include <stdint.h>
+#include "config.h"
 #include "BackTrace.h"
 
 namespace Backtrace {

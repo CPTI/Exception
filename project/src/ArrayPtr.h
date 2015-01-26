@@ -1,6 +1,7 @@
 #ifndef ARRAYPTR_H
 #define ARRAYPTR_H
 
+#include "config.h"
 #include <algorithm>
 #include <stddef.h>
 
@@ -9,9 +10,9 @@
 #include "TypeManip.h"
 
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         #include <atomic>
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         #include <QAtomicInt>
 #endif
 
@@ -163,9 +164,9 @@ namespace ArrayPrivate {
 	struct alloc_count<T, true> {
 
         struct buffer_header {
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
             std::atomic_int count;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
             QAtomicInt count;
 #endif
 			size_t size;
@@ -175,18 +176,18 @@ namespace ArrayPrivate {
 
 		static void incrementCount(T* t) {
 			buffer_header* header = reinterpret_cast<buffer_header*>(t) - 1;
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
             ++header->count;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
             header->count.ref();
 #endif
 		}
 
 		static bool decrementCount(T* t) {
 			buffer_header* header = reinterpret_cast<buffer_header*>(t) - 1;
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
             return --header->count == 0;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
             return !header->count.deref();
 #endif
 		}

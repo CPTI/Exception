@@ -1,23 +1,24 @@
 #ifndef STRING_FORMAT_H
 #define STRING_FORMAT_H
 
-#if __cplusplus >= 201103L
+#include "config.h"
+#ifdef USE_CXX11
 #include "str_conversion.h"
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 #include <QString>
 #endif
 
 namespace string_format {
 
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
 
 template <class... T>
 std::string format(const char* fmt, const T&... t) {
     return std::move(fmt_str(fmt, t...));
 }
 
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 
 template<class T>
 const T& adapt(const T& t) { return t; }

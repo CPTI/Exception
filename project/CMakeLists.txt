@@ -1,6 +1,7 @@
 include_directories(src)
 
 SET(HEADERS
+	src/config.h
 	src/Software.h
 	src/MapUtils.h
 	src/SymbolCache.h
@@ -82,5 +83,5 @@ install(EXPORT ExceptionTargets DESTINATION
 
 IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 install(TARGETS exception EXPORT ExceptionTargets LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
-install(DIRECTORY src/ DESTINATION "${INSTALL_INCLUDE_DIR}/exception" FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY src/ DESTINATION "${INSTALL_INCLUDE_DIR}/exception" FILES_MATCHING PATTERN "*.h" PATTERN "*config.h" EXCLUDE)
 ENDIF()

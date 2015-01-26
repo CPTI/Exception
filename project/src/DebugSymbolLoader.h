@@ -1,6 +1,7 @@
 #ifndef SYMBOLLOADER_H
 #define SYMBOLLOADER_H
 
+#include "config.h"
 #include "BackTrace.h"
 
 namespace Backtrace {

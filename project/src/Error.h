@@ -5,12 +5,13 @@
 #define ERRO_H
 
 
+#include "config.h"
 #include "Software.h"
 #include "LoggerFwd.h"
 #include <stddef.h>
 #include <string>
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 #include <QObject>
 
 
@@ -170,7 +171,7 @@ public:
             unsigned int abortFileLine,
             //! Mensagem que será exibida.
             const char* message);
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
     static void abort(
             const Software& software,
             //! Resultado da macro __FILE__.
@@ -261,7 +262,7 @@ public:
             const char *abortFilename,
             unsigned int abortFileLine,
             const char* message = "");
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
     static void assertFailed(
             const Software& software,
             const char *expressionAsString,
@@ -301,7 +302,7 @@ private:
 
     static Log::Logger& errLog(std::string outputName);
     static Log::Logger& errLog(const char* outputName = "stderr");
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
     static Log::Logger& errLog(QString outputName);
 #endif
 

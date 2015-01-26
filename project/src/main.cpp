@@ -1,7 +1,7 @@
 #include "Exception.h"
 #include <iostream>
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	#include <QCoreApplication>
 #endif
 
@@ -25,7 +25,7 @@ void faulty_2(int depth) {
 
 int main(int argc, char *argv[])
 {
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 
 	QCoreApplication app(argc, argv);
 #else

@@ -1,8 +1,7 @@
-
-#include <vector>
-
 #ifndef SVECTOR_H
 #define SVECTOR_H
+#include "config.h"
+#include <vector>
 #include "string_format.h"
 
 

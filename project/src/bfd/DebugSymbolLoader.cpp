@@ -8,9 +8,9 @@
 #include <map>
 #include <vector>
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
 #include <mutex>
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 #include <QMutex>
 #include <QMutexLocker>
 #endif
@@ -34,13 +34,13 @@ namespace Backtrace {
 		};
 
 		typedef std::map<string, BFD_context> context_map;
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::mutex mutex_t;
         struct mutex_locker_t {
             std::lock_guard<mutex_t> guard;
             mutex_locker_t(mutex_t* l) : guard(*l) {}
         };
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QMutex mutex_t;
         typedef QMutexLocker mutex_locker_t;
 #endif

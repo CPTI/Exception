@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <sstream>
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
 #include <chrono>
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 #include <QDateTime>
 #endif
 
@@ -28,14 +28,14 @@ static const char* levelNames[] = {
 
 namespace {
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
 
 int64_t currentTimeMs() {
     auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
 
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 
     int64_t currentTimeMs() {
 #if QT_VERSION >= 0x040700
@@ -186,7 +186,7 @@ namespace Log {
         return getLogger(std::string(name), std::string(outputName), colored);
     }
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
     Logger& LoggerFactory::getLogger(const QString& name, QString outputName, bool colored) {
         return getLogger(name.toStdString(), outputName.toStdString(), colored);
     }

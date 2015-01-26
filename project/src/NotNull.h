@@ -1,6 +1,7 @@
 #ifndef NOTNULL_H
 #define NOTNULL_H
 
+#include "config.h"
 #include "Error.h"
 
 template<typename T>
@@ -72,7 +73,7 @@ private:
 	friend void std::swap<>(NotNull<T>&, NotNull<T>&);
 };
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 //! Overload da funcao qHash que repassa para o qHash de ponteiro
 template <class T> inline uint qHash(const NotNull<T>& n)
 {

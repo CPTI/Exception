@@ -7,18 +7,24 @@ set(EXCEPTION_PATCH_VERSION 0)
 set(EXCEPTION_VERSION ${EXCEPTION_MAJOR_VERSION}.${EXCEPTION_MINOR_VERSION}.${EXCEPTION_PATCH_VERSION})
 
 IF(BUILD_QT OR SUPPORT_QT)
-FIND_PACKAGE(Qt4 REQUIRED)
-INCLUDE(${QT_USE_FILE})
-ADD_DEFINITIONS(${QT_DEFINITIONS})
-IF(BUILD_QT)
-	set(EXCEPTION_CONF "Qt")
-ELSE()
-	set(EXCEPTION_CONF "C++11+Qt")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-ENDIF()
+    FIND_PACKAGE(Qt4 REQUIRED)
+    INCLUDE(${QT_USE_FILE})
+    ADD_DEFINITIONS(${QT_DEFINITIONS})
+    IF(BUILD_QT)
+            set(EXCEPTION_CONF "Qt")
+            set(USE_DEFINITION "#define USE_QT 1")
+            set(SUPPORT_DEFINITION "#define SUPPORT_QT 1")
+    ELSE()
+            set(EXCEPTION_CONF "C++11+Qt")
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+            set(USE_DEFINITION "#define USE_CXX11 1")
+            set(SUPPORT_DEFINITION "#define SUPPORT_QT 1")
+    ENDIF()
 ELSE()
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	set(EXCEPTION_CONF "C++11")
+        set(USE_DEFINITION "#define USE_CXX11 1")
+        set(SUPPORT_DEFINITION "")
 ENDIF()
 
 set(LIBSUFFIX "")
@@ -54,6 +60,12 @@ install(FILES
   "${PROJECT_BINARY_DIR}/ExceptionConfig.cmake"
   "${PROJECT_BINARY_DIR}/ExceptionConfigVersion.cmake"
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+
+configure_file(config.h.cmake.in
+  "${PROJECT_BINARY_DIR}/config.h" @ONLY)
+
+install(FILES "${PROJECT_BINARY_DIR}/config.h" DESTINATION "${INSTALL_INCLUDE_DIR}/exception" COMPONENT dev)
 
 ENABLE_TESTING()
 add_subdirectory(project)

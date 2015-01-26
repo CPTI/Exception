@@ -1,6 +1,7 @@
 #ifndef DEMANGLING_H
 #define DEMANGLING_H
 
+#include "config.h"
 #include <string>
 
 namespace Demangling {

@@ -5,7 +5,7 @@
 #include "Exception.h"
 #include "Logger.h"
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 #include <QMessageBox>
 #include <QString>
 #endif
@@ -46,7 +46,7 @@ namespace Log {
 		}
 	};
 }
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 static void ERR_qtMessageOutput(QtMsgType type, const char * message)
 {
 	static Log::Logger& logger = Log::LoggerFactory::getLogger("Qt log");
@@ -80,7 +80,7 @@ static void ERR_qtMessageOutput(QtMsgType type, const char * message)
 void Error::initialize(const Software& mainSoftware, std::string outputName)
 {
 	s_mainSoftware = &mainSoftware;
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	// Instala o tratador de mensagens do Qt
 	qInstallMsgHandler(ERR_qtMessageOutput);
 #endif
@@ -98,7 +98,7 @@ Log::Logger& Error::errLog(const char* outputName)
 {
     return errLog(std::string(outputName));
 }
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 Log::Logger& Error::errLog(QString outputName)
 {
     return errLog(outputName.toStdString());
@@ -157,7 +157,7 @@ void Error::abort(
     abort(software, abortFilename, abortFileLine, std::string(message));
 }
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 void Error::abort(
     const Software& software,
     const char * abortFilename,
@@ -282,7 +282,7 @@ void Error::assertFailed(
     assertFailed(software, expressionAsString, abortFileName, abortFileline, std::string(message));
 }
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 void Error::assertFailed(
         const Software& software,
         const char * expressionAsString,

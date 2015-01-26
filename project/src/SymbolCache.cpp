@@ -20,9 +20,9 @@ namespace BacktracePrivate {
 		if (it == m_cache.end()) {
 			return NULL;
 		} else {
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
             return &(it->second);
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
             return &(*it);
 #endif
 		}

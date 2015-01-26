@@ -1,6 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "config.h"
 
 #include "ArrayPtr.h"
 #include "BackTrace.h"
@@ -20,13 +21,13 @@
 #include <stdint.h>
 #include <sstream>
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
 #include <memory>
 #include <unordered_map>
 #include <mutex>
 #endif
 
-#if QT_CORE_LIB
+#ifdef SUPPORT_QT
 #include <QFile>
 #include <QList>
 #include <QMap>
@@ -128,7 +129,7 @@ namespace Log {
 	template<class T>
 	struct Formatter<std::list<T> > : public IterableFormatter<std::list<T> > {	};
 
-#ifdef  QT_CORE_LIB
+#ifdef SUPPORT_QT
 	template<class T>
 	struct Formatter<QVector<T> > : public IterableFormatter<QVector<T> > {	};
 
@@ -180,9 +181,9 @@ namespace Log {
 	public:
 		virtual ~SplitOutput() {}
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<Output> output_ptr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<Output> output_ptr;
 #endif
 
@@ -212,9 +213,9 @@ namespace Log {
 
 	class LevelFilter: public Output {
     public:
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<Output> output_ptr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<Output> output_ptr;
 #endif
 
@@ -252,9 +253,9 @@ namespace Log {
         void flush() {}
 
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<StreamOutput> stream_output_ptr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<StreamOutput> stream_output_ptr;
 #endif
 
@@ -273,9 +274,9 @@ namespace Log {
 
         void flush() {}
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<ColoredStreamOutput> stream_output_ptr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<ColoredStreamOutput> stream_output_ptr;
 #endif
 
@@ -303,11 +304,11 @@ namespace Log {
 	 *
 	 */
 	class LineBufferOutput: public Output {
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::mutex mutex_t;
         typedef std::lock_guard<std::mutex> mutex_locker_t;
         inline mutex_t& locker_arg(mutex_t& m) {return m; }
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QMutex mutex_t;
         typedef QMutexLocker mutex_locker_t;
         inline mutex_t* locker_arg(mutex_t& m) {return &m; }
@@ -395,11 +396,11 @@ namespace Log {
 	class LoggerFactory {
 	public:
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<Logger> LoggerPtr;
         typedef std::unordered_map<std::string, LoggerPtr> LoggerMap;
         typedef std::shared_ptr<Output> OutputPtr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<Logger> LoggerPtr;
         typedef std::map<std::string, LoggerPtr> LoggerMap;
         typedef QSharedPointer<Output> OutputPtr;
@@ -409,7 +410,7 @@ namespace Log {
 
         static Logger& getLogger(const char* name, const char* outputName = "stderr", bool colored = true);
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
         static Logger& getLogger(const QString& name, QString outputName = "stderr", bool colored = true);
 #endif
 
@@ -447,9 +448,9 @@ namespace Log {
 	private:
 
 	public:
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
         typedef std::shared_ptr<Output> output_ptr;
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
         typedef QSharedPointer<Output> output_ptr;
 #endif
 

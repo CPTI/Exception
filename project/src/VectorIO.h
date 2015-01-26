@@ -1,6 +1,7 @@
 #ifndef VECTORIO_H
 #define VECTORIO_H
 
+#include "config.h"
 #include <stddef.h>
 #include <stdio.h>
 

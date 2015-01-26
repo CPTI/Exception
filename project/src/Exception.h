@@ -7,11 +7,13 @@
 
 #ifndef EXCEPTION_H_
 #define EXCEPTION_H_
+
+#include "config.h"
 #include <exception>
 #include <stdexcept>
 #include <ostream>
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 #include <QtCore>
 #include <QString>
 	typedef QtConcurrent::Exception BaseExceptionType;
@@ -173,7 +175,7 @@ namespace ExceptionLib {
 	  explicit Exception(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  explicit Exception(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true)
 		  :ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
@@ -199,7 +201,7 @@ namespace ExceptionLib {
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  IOException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
@@ -218,7 +220,7 @@ namespace ExceptionLib {
 	  InvalidStateException(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  InvalidStateException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
@@ -237,7 +239,7 @@ namespace ExceptionLib {
 	  AbortException(std::string errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  AbortException(QString errorMsg, const ExceptionBase* nested = NULL, bool trace = true )
 		  : ExceptionBase(this, trace, errorMsg.toStdString(), nested) {}
 #endif
@@ -261,7 +263,7 @@ namespace ExceptionLib {
 	  ProgrammingError(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  ProgrammingError(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
@@ -281,7 +283,7 @@ namespace ExceptionLib {
 	  InvalidParameterException(std::string errorMsg, const ExceptionBase* nested = NULL)
 		: ExceptionBase(this, true, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  InvalidParameterException(QString errorMsg, const ExceptionBase* nested = NULL)
 		: ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
@@ -300,7 +302,7 @@ namespace ExceptionLib {
 	  SegmentationFault(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  SegmentationFault(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
@@ -319,7 +321,7 @@ namespace ExceptionLib {
 	  IllegalInstruction(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  IllegalInstruction(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif
@@ -339,7 +341,7 @@ namespace ExceptionLib {
 	  FloatingPointException(std::string errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg, nested) {}
 
-#ifdef QT_CORE_LIB
+#ifdef SUPPORT_QT
 	  FloatingPointException(QString errorMsg, const ExceptionBase* nested = NULL)
 		  : ExceptionBase(this, true, errorMsg.toStdString(), nested) {}
 #endif

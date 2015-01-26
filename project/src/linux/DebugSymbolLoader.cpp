@@ -17,7 +17,7 @@
 #include <fstream>
 #include <memory>
 #include <ext/stdio_filebuf.h>
-#ifdef QT_CORE_LIB
+#ifdef USE_QT
 #include <QThreadStorage>
 #endif
 using namespace std;
@@ -254,13 +254,13 @@ namespace Backtrace {
 		}
 	};
 
-#if __cplusplus >= 201103L
+#ifdef USE_CXX11
     IDebugSymbolLoader& getPlatformDebugSymbolLoader()
     {
         static thread_local Addr2LineSymbolLoader storage;
         return storage;
     }
-#elif defined QT_CORE_LIB
+#elif defined USE_QT
 	IDebugSymbolLoader& getPlatformDebugSymbolLoader()
 	{
 		static QThreadStorage<Addr2LineSymbolLoader*> storage;
