@@ -22,8 +22,8 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
-#ifndef STRING_CONVERSION_H
-#define STRING_CONVERSION_H
+#ifndef STRING_CONVERSION_2_H
+#define STRING_CONVERSION_2_H
 
 #include <sstream>
 #include <cctype>
@@ -34,7 +34,7 @@
 
 namespace {
 
-namespace string_conversion_impl {
+namespace string_conversion_impl_2 {
 
     struct stream {
         static std::istream& in();
@@ -152,30 +152,33 @@ namespace string_conversion_impl {
 						: ConversionFrom::None;
 	}
 }
+}
+
+namespace strconv2 {
 
 
 template<class T>
 constexpr bool convertible_to_string()
 {	
-	return string_conversion_impl::conversionToType<T>() != string_conversion_impl::ConversionTo::None;
+    return string_conversion_impl_2::conversionToType<T>() != string_conversion_impl_2::ConversionTo::None;
 }
 
 template<class T>
 constexpr bool convertible_from_string()
 {
-	return string_conversion_impl::conversionFromType<T>() != string_conversion_impl::ConversionFrom::None;
+    return string_conversion_impl_2::conversionFromType<T>() != string_conversion_impl_2::ConversionFrom::None;
 }
 
 
 template<class T>
 ::std::string toString(const T& t, bool* success = nullptr) {
-	return ::std::move(string_conversion_impl::ouput_helper<T, string_conversion_impl::conversionToType<T>()>::print(t, success));
+    return ::std::move(string_conversion_impl_2::ouput_helper<T, string_conversion_impl_2::conversionToType<T>()>::print(t, success));
 }
 
 
 template<class T>
 T fromString(const ::std::string& str, bool* success = nullptr) {
-	return string_conversion_impl::input_helper<T, string_conversion_impl::conversionFromType<T>()>::parse(str, success);
+    return string_conversion_impl_2::input_helper<T, string_conversion_impl_2::conversionFromType<T>()>::parse(str, success);
 }
 
 
@@ -218,4 +221,4 @@ template<class... T>
 
 }
 
-#endif /* STRING_CONVERSION_H */
+#endif /* STRING_CONVERSION_2_H */

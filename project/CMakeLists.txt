@@ -23,7 +23,7 @@ SET(HEADERS
 	src/TypelistMacros.h
 	src/NotNull.h
 	src/Demangling.h
-	src/str_conversion.h
+        src/str_conversion2.h
 	src/VectorIO.h
 )
 

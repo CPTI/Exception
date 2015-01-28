@@ -3,7 +3,7 @@
 
 #include "config.h"
 #ifdef USE_CXX11
-#include "str_conversion.h"
+#include "str_conversion2.h"
 #elif defined USE_QT
 #include <QString>
 #endif
@@ -15,7 +15,7 @@ namespace string_format {
 
 template <class... T>
 std::string format(const char* fmt, const T&... t) {
-    return std::move(fmt_str(fmt, t...));
+    return std::move(strconv2::fmt_str(fmt, t...));
 }
 
 #elif defined USE_QT
