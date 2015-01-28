@@ -569,8 +569,14 @@ namespace Log {
 
         void output(Level level, const char* str, int len);
 	private:
+#if __cplusplus >= 201103L
+        // in g++-4.7 std::is_constructible fails if copy construction is disabled using the C++98 hack
+        Logger(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
+#else
 		Logger(const Logger&);
 		Logger& operator=(const Logger&);
+#endif
 
         Logger(std::string name, output_ptr defaultOutput, Level defaultLevel, ExceptOpts);
 
