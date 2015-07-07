@@ -224,18 +224,37 @@ namespace ExceptionLib {
 
 	static bool stackEnabled = true;
 
-
+    //https://akrzemi1.wordpress.com/2011/10/05/using-stdterminate/
 	void terminate_handler()
 	{
-#ifdef __GNUC__
-		static bool tried_throw = false;
+#ifdef USE_CXX11
+        std::exception_ptr ptr = current_exception();
+        if (ptr) {
+            try {
+                std::rethrow_exception(ptr);
+            }
+            catch (const std::exception &ex) {
+                Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unhandled exception:\n%1", ex);
+            }
+            catch (...) {
+                Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unknown unhandled exception");
+            }
+        } else {
+            Log::LoggerFactory::getLogger("root").log(Log::LERROR, "terminate called for unknown reason");
+        }
 
-		try {
-			if (!tried_throw) {
-				tried_throw = true;
-				throw;
-			}
-			cerr << "no active exception" << endl;
+#elif defined(__GNUC__) && defined(USE_QT)
+        static QThreadStorage<bool> tried_throw;
+        if (!tried_throw.hasLocalData()) {
+            tried_throw.setLocalData(false);
+        }
+
+        try {
+            if (!tried_throw.localData()) {
+                tried_throw.setLocalData(true);
+                throw;
+            }
+            Log::LoggerFactory::getLogger("root").log(Log::LERROR, "terminate called for unknown reason");
 		}
 		catch (const std::exception &ex) {
 			Log::LoggerFactory::getLogger("root").log(Log::LERROR, "Unhandled exception:\n%1", ex);

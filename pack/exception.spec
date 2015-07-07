@@ -1,5 +1,5 @@
 Name:		exception
-Version:	0.3
+	Version:	0.4
 Release:	1%{?dist}
 Summary:	A debugging instrumentation and logging library for C++11
 
